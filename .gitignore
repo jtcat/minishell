@@ -1,3 +1,4 @@
 *.o
 a.out
 *.a
+compile_commands.json
