@@ -17,11 +17,11 @@ OBJS = $(SRCS:.c=.o)
 
 all: $(NAME)
 
-$(NAME): $(OBJS) $(LFT)	
+$(NAME): $(LFT) $(OBJS) 
 	$(CC) $(CFLAGS) $(LIB_FLAGS) $(LFT) $(OBJS) -o $(NAME)
 
 %.o: %.c
-	$(CC) $(CFLAGS) -L$(INC_DIR) -c $< -o $@
+	$(CC) $(CFLAGS) -I$(INC_DIR) -c $< -o $@
 
 $(LFT):
 	$(MAKE) bonus -C $(LFT_DIR)
