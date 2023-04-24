@@ -2,7 +2,7 @@ CC:= cc
 
 CFLAGS:= -Wall -Werror -Wextra
 
-LIB_FLAGS:= -pthread -lradline
+LIB_FLAGS:= -pthread -lreadline
 
 INC_DIR:= include
 
