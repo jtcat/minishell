@@ -4,6 +4,8 @@ CFLAGS:= -Wall -Werror -Wextra
 
 LIB_FLAGS:= -pthread -lradline
 
+INC_DIR:= include
+
 NAME:= minishell
 
 LFT_DIR:= libft
@@ -19,7 +21,7 @@ $(NAME): $(OBJS) $(LFT)
 	$(CC) $(CFLAGS) $(LIB_FLAGS) $(LFT) $(OBJS) -o $(NAME)
 
 %.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -L$(INC_DIR) -c $< -o $@
 
 $(LFT):
 	$(MAKE) bonus -C $(LFT_DIR)
