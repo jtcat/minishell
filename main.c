@@ -6,19 +6,21 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:28 by leborges          #+#    #+#             */
-/*   Updated: 2023/04/24 22:29:53 by leborges         ###   ########.fr       */
+/*   Updated: 2023/04/25 12:52:51 by leborges         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Minishell.h"
+#include <Minishell.h>
 
 int	main()
 {
-	t_list	*test;
-	
-	char *input;
-	input = readline("Super mini shellings$ ");
-	test = split_tokens(input);
+	char	*input;
 
-	printf("%s, %s\n", (char *)test->content, (char *)test->next->content);
+	input = readline("Super mini shellings$ ");
+	while (input)
+	{
+		input = readline("Super mini shellings$ ");
+		add_history(input);
+		rl_redisplay();
+	}
 }
