@@ -6,7 +6,7 @@
 /*   By: joaoteix <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/25 14:22:48 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/04/25 21:27:49 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/04/26 00:01:19 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,14 +41,14 @@ int	pwd(void)
 	char	*cwd;
 
 	cwd = getcwd(NULL, 0);
-	ft_putstr_fd(cwd, STDOUT_FILENO);
+	printf("%s\n",cwd);
 	free(cwd);
 	return (0);
 }
 
 int	env(char *env[])
 {
-	while(env)
-		printf("%s\n",*(char **)(env++), STDOUT_FILENO);
+	while(*env)
+		printf("%s\n",*(env++));
 	return(0);
 }
