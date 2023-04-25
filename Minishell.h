@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:25 by leborges          #+#    #+#             */
-/*   Updated: 2023/04/24 19:46:32 by leborges         ###   ########.fr       */
+/*   Updated: 2023/04/25 12:38:28 by leborges         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,15 +16,11 @@
 # include <stdio.h>
 # include <stdlib.h>
 # include <readline/readline.h>
-#inlcude "libft.h"
-
-enum Token_type{NEWLINE, NANE, ASSIGNMENT, WORD};
+# include "./libft/libft.h"
 
 
-typedef struct s_list
-{
-	char			*data;
-	struct s_stack	*next;	
-}	
-					t_list;
+t_list	*split_tokens(char *str);
+enum Token_type{NEW_LINE, NANE, ASSIGNMENT, WORD};
+
+
 #endif
