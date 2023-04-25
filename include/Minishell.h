@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:25 by leborges          #+#    #+#             */
-/*   Updated: 2023/04/25 11:27:02 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/04/25 20:30:55 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,5 +20,7 @@
 # include <libft.h>
 
 enum Token_type {NEW_LINE, NANE, ASSIGNMENT, WORD};
+
+# define PROMPT "minishell >"
 
 #endif

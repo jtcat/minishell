@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:28 by leborges          #+#    #+#             */
-/*   Updated: 2023/04/25 12:52:51 by leborges         ###   ########.fr       */
+/*   Updated: 2023/04/25 20:23:29 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,11 +16,15 @@ int	main()
 {
 	char	*input;
 
-	input = readline("Super mini shellings$ ");
+	input = readline(PROMPT);
 	while (input)
 	{
-		input = readline("Super mini shellings$ ");
+	//	if (is_blank_line(input))
+	//		free(input);
+	//	else
 		add_history(input);
-		rl_redisplay();
+		free(input);
+		input = readline(PROMPT);
 	}
+	rl_clear_history();
 }
