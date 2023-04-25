@@ -17,8 +17,8 @@ OBJS = $(SRCS:.c=.o)
 
 all: $(NAME)
 
-$(NAME): $(LFT) $(OBJS) 
-	$(CC) $(CFLAGS) $(LIB_FLAGS) $(LFT) $(OBJS) -o $(NAME)
+$(NAME): $(LFT) $(OBJS)
+	$(CC) $(CFLAGS) $(LIB_FLAGS) $(OBJS) $(LFT) -o $(NAME)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -I$(INC_DIR) -c $< -o $@
