@@ -6,11 +6,11 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:29:48 by leborges          #+#    #+#             */
-/*   Updated: 2023/04/24 22:00:30 by leborges         ###   ########.fr       */
+/*   Updated: 2023/04/25 14:03:26 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../Minishell.h"
+#include <Minishell.h>
 
 t_list	*split_tokens(char *str)
 {
