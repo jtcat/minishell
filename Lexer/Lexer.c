@@ -6,11 +6,13 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:29:48 by leborges          #+#    #+#             */
-/*   Updated: 2023/04/24 22:00:30 by leborges         ###   ########.fr       */
+/*   Updated: 2023/04/25 14:05:27 by leborges         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../Minishell.h"
+
+char	*parse_quotes(char *str, t_list *token_head)
 
 t_list	*split_tokens(char *str)
 {
