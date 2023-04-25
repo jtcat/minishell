@@ -4,3 +4,4 @@ a.out
 compile_commands.json
 .cache
 minishell
+libft/bonus
