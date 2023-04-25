@@ -11,7 +11,7 @@ NAME:= minishell
 LFT_DIR:= libft
 LFT:= $(LFT_DIR)/libft.a
 
-SRCS = main.c ./Lexer/Lexer.c
+SRCS = main.c ./lexer/lexer.c
 
 OBJS = $(SRCS:.c=.o)
 
