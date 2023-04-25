@@ -3,3 +3,4 @@ a.out
 *.a
 compile_commands.json
 .cache
+minishell
