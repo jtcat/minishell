@@ -6,7 +6,7 @@
 /*   By: joaoteix <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/25 14:22:48 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/04/26 02:24:07 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/04/26 20:51:05 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,11 +18,15 @@
 //
 // Return values represent exit status
 
-int	echo(char str[], int opt_n)
+int	echo_cmd(char *str[], int opt_n)
 {	
-	ft_putstr_fd((char *)str, STDOUT_FILENO);
-	if (!opt_n)
-		ft_putchar_fd('\n', STDOUT_FILENO);
+	while(*str)
+	{
+		ft_putstr_fd((char *)str, STDOUT_FILENO);
+		if (!opt_n)
+			ft_putchar_fd('\n', STDOUT_FILENO);
+		str++;
+	}
 	return (0);
 }
 
@@ -39,7 +43,7 @@ int	cd(t_scontext *ctx, char *new_dir)
 		curpath = new_dir;
 }*/
 
-int	pwd(void)
+int	pwd_cmd(void)
 {
 	char	*cwd;
 
@@ -49,9 +53,9 @@ int	pwd(void)
 	return (0);
 }
 
-int	env(t_scontext *ctx)
+int	env_cmd(t_scontext *ctx)
 {
-	char *const *iter = ctx->envp;
+	char const*const *iter = ctx->envp;
 
 	while (*iter)
 		printf("%s\n",*(iter++));
@@ -72,28 +76,45 @@ void	add_vars(char **envp, t_list *vars, int envlen)
 	}
 }
 
-char const	*sctx_get_var(t_scontext *ctx, char const *const var_id)
+char const	*inter_get_var(char const *envp[], char const *const var_id)
 {
-	int	i;
-
-	i = 0;
-	while (ctx->envp[i])
+	while (*envp)
 	{
-		if (strcmp(ctx->envp[i], var_id) == 0)
-			return (ctx->envp[i]);
-		i++;
-	}
-	i = 0;
-	while (ctx->svars[i])
-	{
-		if (strcmp(ctx->envp[i], var_id) == 0)
-			return (ctx->envp[i]);
-		i++;
+		if (strcmp(*envp, var_id) == 0)
+			return (*envp);
+		envp++;
 	}
 	return (NULL);
 }
 
-int	export(t_scontext *ctx, char *var_ids[])
+char const *sctx_get_param(t_scontext *ctx, char const *const var_id)
+{
+	return (inter_get_var(ctx->svars, var_id));
+}
+
+char const	*sctx_get_var(t_scontext *ctx, char const *const var_id)
+{
+	char const	*ret;
+
+	ret = inter_get_var(ctx->envp, var_id);
+	if (ret)
+		return (ret);
+	ret = inter_get_var(ctx->svars, var_id);
+	return (ret);
+}
+
+int	ptrarr_len(void **arr)
+{
+	int	len;
+
+	len = 0;
+	while (arr[len++])
+		;
+	return (len);
+}
+
+/*
+int	export_var(char const **envp[], char *var_ids[])
 {
 	t_list	*to_export;
 	char	**new_envp;
@@ -103,7 +124,7 @@ int	export(t_scontext *ctx, char *var_ids[])
 	new_ids = 0;
 	while (*var_ids)
 	{
-		if (sctx_get_var(ctx,  *var_ids))
+		if (inter_getenv(*envp,  var_ids))
 		{
 			ft_lstadd_back(&to_export, ft_lstnew(*var_ids));
 			new_ids++;
@@ -112,12 +133,17 @@ int	export(t_scontext *ctx, char *var_ids[])
 	}
 	if (!to_export)
 		return (0);
-	new_envp = malloc(sizeof(char *) * (ctx->envp_len + new_ids));
-	ft_memcpy(new_envp, ctx->envp, ctx->envp_len * sizeof(char *));
+	new_envp = malloc(sizeof(char *) * (ptrarr_len(*envp) + new_ids));
+	ft_memcpy(new_envp, *envp, ctx->envp_len * sizeof(char *));
 	add_vars(new_envp, to_export, ctx->envp_len);
 	ft_lstclear(&to_export, simple_delete);
-	free(ctx->envp);
-	ctx->envp = new_envp;
-	ctx->envp_len += new_ids;
+	free(*envp);
 	return (0);
 }
+
+int	export_cmd(t_scontext *ctx, char *var_ids[])
+{
+	export_var(&ctx->envp, var_ids);
+	ctx->envp_len += new_ids;
+	return (0);
+}*/
