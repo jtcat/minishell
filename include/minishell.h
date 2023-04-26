@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:25 by leborges          #+#    #+#             */
-/*   Updated: 2023/04/26 02:24:19 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/04/26 20:43:39 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,8 +33,8 @@ typedef struct s_scontext
 }	t_scontext;
 
 // Builtins
-int	pwd(void);
-int env(t_scontext *ctx);
-int	echo(char str[], int opt_n);
+int	pwd_cmd(void);
+int env_cmd(t_scontext *ctx);
+int	echo_cmd(char *str[], int opt_n);
 	
 #endif
