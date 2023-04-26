@@ -2,7 +2,7 @@ CC:= cc
 
 CFLAGS:= -Wall -Werror -Wextra
 
-LIB_FLAGS:= -pthread -lreadline
+LIB_FLAGS:= -lreadline
 
 INC_DIR:= include
 
@@ -11,7 +11,7 @@ NAME:= minishell
 LFT_DIR:= libft
 LFT:= $(LFT_DIR)/libft.a
 
-SRCS = main.c ./lexer/lexer.c ./builtins/builtins.c
+SRCS = main.c ./lexer/lexer.c ./builtins/builtins.c ./utils/str_utils.c
 
 OBJS = $(SRCS:.c=.o)
 
