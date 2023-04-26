@@ -6,7 +6,7 @@
 /*   By: joaoteix <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/25 14:22:48 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/04/26 20:51:05 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/04/26 23:42:41 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@
 
 int	echo_cmd(char *str[], int opt_n)
 {	
-	while(*str)
+	while (*str)
 	{
 		ft_putstr_fd((char *)str, STDOUT_FILENO);
 		if (!opt_n)
@@ -55,7 +55,7 @@ int	pwd_cmd(void)
 
 int	env_cmd(t_scontext *ctx)
 {
-	char const*const *iter = ctx->envp;
+	char const*const	*iter = ctx->envp;
 
 	while (*iter)
 		printf("%s\n",*(iter++));
@@ -72,7 +72,7 @@ void	add_vars(char **envp, t_list *vars, int envlen)
 	while (vars)
 	{
 		envp[envlen++] = vars->content;
-		vars =  vars->next;
+		vars = vars->next;
 	}
 }
 
@@ -87,7 +87,7 @@ char const	*inter_get_var(char const *envp[], char const *const var_id)
 	return (NULL);
 }
 
-char const *sctx_get_param(t_scontext *ctx, char const *const var_id)
+char const	*sctx_get_param(t_scontext *ctx, char const *const var_id)
 {
 	return (inter_get_var(ctx->svars, var_id));
 }
