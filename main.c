@@ -6,17 +6,24 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:28 by leborges          #+#    #+#             */
-/*   Updated: 2023/04/26 21:01:34 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/04/26 21:19:22 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "libft.h"
 #include <minishell.h>
+
+void delete_token(void *token)
+{
+	free(((t_token *)token)->string);
+	free(token);
+}
 
 int	main(int argc, char *argv[], char const *envp[])
 {
 	char	*input;
 	t_scontext	ctx;
-	t_list	*list;
+	t_list	*list, *iter;
 
 	ctx.envp = envp;
 	(void)argv;
@@ -25,24 +32,22 @@ int	main(int argc, char *argv[], char const *envp[])
 		input = readline(PROMPT);
 		while (input)
 		{
-			//	if (is_blank_line(input))
-			//		free(input);
-			//	else
+			list = iter = split_tokens(input);
+			while (iter)
+			{
+				printf("Data: %s | Token: %u\n", ((t_token *)iter->content)->string, ((t_token *)iter->content)->type);
+				iter = iter->next;
+			}
+			ft_lstclear(&list, delete_token);
 			add_history(input);
 			free(input);
 			input = readline(PROMPT);
-			list = split_tokens(input);
-			while (list)
-			{
-				printf("Data: %s | Token: %u\n", ((t_token *)list->content)->string, ((t_token *)list->content)->type);
-				list = list->next;
-			}
 		}
+		rl_clear_history();
 		env_cmd(&ctx);
 		pwd_cmd();
 		echo_cmd((char *[]){"ATMD4\n", NULL}, 0);
 		echo_cmd((char *[]){"ATMD4SEMESPACO\n", "okboafa", NULL}, 1);
 		echo_cmd((char *[]){"ATMD4\n", NULL}, 0);
-		rl_clear_history();
 	}
 }
