@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:29:48 by leborges          #+#    #+#             */
-/*   Updated: 2023/04/26 21:02:33 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/04/26 21:06:59 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,15 @@ void	parse_quotes(char **str, int *wordlen, token_type *type)
 	}
 }
 
+void	store_token(t_list **token_head, char **str, int *wordlen, token_type *type)
+{
+	if (*wordlen == 0)
+		return ;
+	ft_lstadd_back(token_head, ft_lstnew((create_token(ft_substr(*str - *wordlen, 0, *wordlen), *type))));
+	*wordlen = 0;
+	*type = TOKEN;
+}
+
 void	parse_operators(t_list **token_head, char **str, int *wordlen, enum token_type *type)
 {
 
@@ -74,15 +83,6 @@ void	parse_operators(t_list **token_head, char **str, int *wordlen, enum token_t
 		*type = OPERATOR;
 		store_token(token_head, str, wordlen, type);
 	}
-}
-
-void	store_token(t_list **token_head, char **str, int *wordlen, token_type *type)
-{
-	if (*wordlen == 0)
-		return ;
-	ft_lstadd_back(token_head, ft_lstnew((create_token(ft_substr(*str - *wordlen, 0, *wordlen), *type))));
-	*wordlen = 0;
-	*type = TOKEN;
 }
 
 int	is_op(char c)
