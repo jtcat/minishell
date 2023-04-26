@@ -6,13 +6,14 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:29:48 by leborges          #+#    #+#             */
-/*   Updated: 2023/04/26 21:06:59 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/04/26 23:41:08 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <minishell.h>
+#include <str_utils.h>
 
-t_token	*create_token(char *s, token_type type)
+t_token	*create_token(char *s, t_token_type type)
 {
 	t_token	*token;
 
@@ -22,14 +23,21 @@ t_token	*create_token(char *s, token_type type)
 	return (token);
 }
 
-int	is_quote(char c)
+void	store_token(t_list **token_head, char **str, int *wordlen,
+		t_token_type *type)
 {
-	return (c == '"' || c == '\'');
+	if (*wordlen == 0)
+		return ;
+	ft_lstadd_back(token_head,
+		ft_lstnew(
+			create_token(ft_substr(*str - *wordlen, 0, *wordlen), *type)));
+	*wordlen = 0;
+	*type = token;
 }
 
-void	parse_quotes(char **str, int *wordlen, token_type *type)
+void	parse_quotes(char **str, int *wordlen, t_token_type *type)
 {
-	const char *end_quote;
+	const char	*end_quote;
 
 	while (is_quote(**str))
 	{
@@ -38,7 +46,7 @@ void	parse_quotes(char **str, int *wordlen, token_type *type)
 		{
 			*wordlen += ++end_quote - *str;
 			*str = (char *)end_quote;
-			*type = WORD;
+			*type = word;
 		}
 		else
 		{
@@ -48,31 +56,22 @@ void	parse_quotes(char **str, int *wordlen, token_type *type)
 	}
 }
 
-void	store_token(t_list **token_head, char **str, int *wordlen, token_type *type)
+void	parse_operators(t_list **token_head, char **str,
+		int *wordlen, t_token_type *type)
 {
-	if (*wordlen == 0)
-		return ;
-	ft_lstadd_back(token_head, ft_lstnew((create_token(ft_substr(*str - *wordlen, 0, *wordlen), *type))));
-	*wordlen = 0;
-	*type = TOKEN;
-}
-
-void	parse_operators(t_list **token_head, char **str, int *wordlen, enum token_type *type)
-{
-
 	if (**str == '>' || **str == '<')
 	{
 		if ((*str + 1) == *str)
 		{
 			*wordlen += 2;
 			*str += 2;
-			*type = OPERATOR;
+			*type = operator;
 		}
 		else
 		{
 			*wordlen += 1;
 			*str += 1;
-			*type = OPERATOR;
+			*type = operator;
 		}
 		store_token(token_head, str, wordlen, type);
 	}
@@ -80,19 +79,9 @@ void	parse_operators(t_list **token_head, char **str, int *wordlen, enum token_t
 	{
 		*wordlen += 1;
 		*str += 1;
-		*type = OPERATOR;
+		*type = operator;
 		store_token(token_head, str, wordlen, type);
 	}
-}
-
-int	is_op(char c)
-{
-	return (c == '>' || c == '<' || c == '|');
-}
-
-int	is_delim(char c)
-{
-	return (c == ' ' || c == '\0' || c == '>' || c == '<' || c == '|');
 }
 
 void	parse_wordchar(char **str, int *wordlen)
@@ -101,25 +90,26 @@ void	parse_wordchar(char **str, int *wordlen)
 	(*wordlen)++;
 }
 
-int	parse_delim(t_list **token_head, char **str, int *wordlen, token_type *type)
+int	parse_delim(t_list **token_head, char **str,
+		int *wordlen, t_token_type *type)
 {
-		store_token(token_head, str, wordlen, type);
-		if (is_op(**str))
-			parse_operators(token_head, str, wordlen, type);
-		else if (**str == '\0')
-			return (1);
-		else
-			(*str)++;
-		return (0);
+	store_token(token_head, str, wordlen, type);
+	if (is_op(**str))
+		parse_operators(token_head, str, wordlen, type);
+	else if (**str == '\0')
+		return (1);
+	else
+		(*str)++;
+	return (0);
 }
 
 t_list	*split_tokens(char *str)
 {
-	t_list 			*token_head;
-	enum token_type type;
+	t_list			*token_head;
+	t_token_type	type;
 	int				wordlen;
 
-	type = TOKEN;
+	type = token;
 	token_head = NULL;
 	wordlen = 0;
 	while (1)
@@ -133,7 +123,6 @@ t_list	*split_tokens(char *str)
 		}
 		else
 			parse_wordchar(&str, &wordlen);
-
 	}
 	return (token_head);
 }
