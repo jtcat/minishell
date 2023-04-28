@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:29:48 by leborges          #+#    #+#             */
-/*   Updated: 2023/04/26 23:41:08 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/04/28 14:51:18 by leborges         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ void	parse_operators(t_list **token_head, char **str,
 {
 	if (**str == '>' || **str == '<')
 	{
-		if ((*str + 1) == *str)
+		if (*(*str + 1) == **str)
 		{
 			*wordlen += 2;
 			*str += 2;
