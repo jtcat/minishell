@@ -6,7 +6,7 @@
 /*   By: joaoteix <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/25 14:22:48 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/04/26 23:42:41 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/04/28 14:29:46 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ int	echo_cmd(char *str[], int opt_n)
 {	
 	while (*str)
 	{
-		ft_putstr_fd((char *)str, STDOUT_FILENO);
+		ft_putstr_fd(*str, STDOUT_FILENO);
 		if (!opt_n)
 			ft_putchar_fd('\n', STDOUT_FILENO);
 		str++;
