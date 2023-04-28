@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   builtins.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joaoteix <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/25 14:22:48 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/04/28 20:28:07 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/04/28 20:30:04 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,8 +85,13 @@ char const	**inter_get_var(char const *envp[], char const *const var_id)
 {
 	while (*envp)
 	{
+<<<<<<< HEAD
 		if (strcmp(*envp, var_id) == 0)
 			return (envp);
+=======
+		if (ft_strcmp(*envp, var_id) == 0)
+			return (*envp);
+>>>>>>> 868c44bcdd01e2a6bc7197c9ff66a5ef87dd7208
 		envp++;
 	}
 	return (NULL);
@@ -149,8 +154,54 @@ int	export_vars(char const **envp[], char *var_ids[])
 int	set_var(char const **vars[], char *new_vars[])
 {
 	char const *new_vars[];
+}
 
+int	unset_vars(char const **envp[], char *var_ids[])
+{
+	t_list	*to_unset;
+	char	**new_envp;
+	int		old_ids;
+	
+	old_ids = 0;
+	while (*var_ids)
+	{
+		if (inter_get_var(*envp, var_ids))
+		{
+			ft_lstadd_back(&to_unset, ft_lstnew(*var_ids));
+			old_ids++;
+		}
+		mew_envp = malloc(sizeof(char *) * (ptrarr_len(*envp) - old_ids));
+		new_envp = remove_vars(envp, new_envp, to_export);
+	}
+	ft_lstclear(&to_export, simple_delete);
+	free(*envp);
+	*envp = new_envp;
+	return (0);
+}
 
+cahr	**remove_vars(char **envp, char new_envp, t_list *vars)
+{
+	int i = 0;
+	int	j = 0;
+
+	while (vars)
+	{
+		while(envp[i])
+		{
+			if (ft_strcmp(envp[i], vars->content) == 0)
+			{
+				i++;
+				vars = vars->next;
+			}
+			else
+			{
+				new_envp[j] = envp[i];
+				j++;
+				i++;
+			}
+		}
+	}
+	return (new_envp);
 }
 
 int	export_cmd(t_scontext *ctx, char *var_ids[])
