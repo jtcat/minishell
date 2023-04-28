@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:25 by leborges          #+#    #+#             */
-/*   Updated: 2023/04/27 00:17:22 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/04/28 17:46:24 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,7 @@ typedef struct s_cmd
 	char const	**exports;
 	char const	*red_in;
 	char const	*red_out;
+	char const	*envp;
 }	t_cmd;
 
 // Lexer
