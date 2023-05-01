@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:28 by leborges          #+#    #+#             */
-/*   Updated: 2023/04/26 21:19:22 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/04/28 14:41:04 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,8 @@ int	main(int argc, char *argv[], char const *envp[])
 		env_cmd(&ctx);
 		pwd_cmd();
 		echo_cmd((char *[]){"ATMD4\n", NULL}, 0);
-		echo_cmd((char *[]){"ATMD4SEMESPACO\n", "okboafa", NULL}, 1);
+		echo_cmd((char *[]){"ATMD4SEMESPACO\n", "okboafa", NULL}, 0);
+		echo_cmd((char *[]){"ATMD4SEMESPACO", "okboafa", NULL}, 1);
 		echo_cmd((char *[]){"ATMD4\n", NULL}, 0);
 	}
 }

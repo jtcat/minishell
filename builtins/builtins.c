@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/25 14:22:48 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/05/01 16:06:04 by leborges         ###   ########.fr       */
+/*   Updated: 2023/05/01 17:21:11 by leborges         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,6 +87,11 @@ int	env_cmd(t_scontext *ctx)
 	return (0);
 }
 
+void	exit_cmd(unsigned char exit_code)
+{
+	exit((int)exit_code);
+}
+
 void	simple_delete(void *content)
 {
 	free(content);
@@ -101,7 +106,7 @@ void	add_vars(char **envp, t_list *vars, int envlen)
 	}
 }
 
-char const	*inter_get_var(char const *envp[], char const *const var_id)
+char const	**inter_get_var(char const *envp[], char const *const var_id)
 {
 	while (*envp)
 	{
@@ -114,17 +119,17 @@ char const	*inter_get_var(char const *envp[], char const *const var_id)
 
 char const	*sctx_get_param(t_scontext *ctx, char const *const var_id)
 {
-	return (inter_get_var(ctx->svars, var_id));
+	return (*inter_get_var(ctx->svars, var_id));
 }
 
 char const	*sctx_get_var(t_scontext *ctx, char const *const var_id)
 {
 	char const	*ret;
 
-	ret = inter_get_var(ctx->envp, var_id);
+	ret = *inter_get_var(ctx->envp, var_id);
 	if (ret)
 		return (ret);
-	ret = inter_get_var(ctx->svars, var_id);
+	ret = *inter_get_var(ctx->svars, var_id);
 	return (ret);
 }
 
@@ -138,8 +143,7 @@ int	ptrarr_len(void **arr)
 	return (len);
 }
 
-
-int	export_var(char const **envp[], char *var_ids[])
+int	export_vars(char const **envp[], char *var_ids[])
 {
 	t_list	*to_export;
 	char	**new_envp;
@@ -149,7 +153,7 @@ int	export_var(char const **envp[], char *var_ids[])
 	new_ids = 0;
 	while (*var_ids)
 	{
-		if (inter_get_var(*envp,  var_ids))
+		if (inter_get_var(*envp, var_ids))
 		{
 			ft_lstadd_back(&to_export, ft_lstnew(*var_ids));
 			new_ids++;
@@ -165,6 +169,11 @@ int	export_var(char const **envp[], char *var_ids[])
 	free(*envp);
 	*envp = new_envp;
 	return (0);
+}
+
+int	set_var(char const **vars[], char *new_vars[])
+{
+	char const *new_vars[];
 }
 
 int	unset_vars(char const **envp[], char *var_ids[])
@@ -217,7 +226,12 @@ char	**remove_vars(char **envp, char new_envp, t_list *vars)
 
 int	export_cmd(t_scontext *ctx, char *var_ids[])
 {
-	export_var(&ctx->envp, var_ids);
-	ctx->envp_len += new_ids;
+	if (!var_ids)
+		env_cmd(ctx);
+	else
+	{
+		export_var(&ctx->envp, var_ids);
+		unset_vars(ctx, var_ids);
+	}
 	return (0);
 }
