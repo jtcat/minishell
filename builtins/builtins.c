@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/25 14:22:48 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/04/28 19:33:08 by leborges         ###   ########.fr       */
+/*   Updated: 2023/05/01 16:06:04 by leborges         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,18 +30,43 @@ int	echo_cmd(char *str[], int opt_n)
 	return (0);
 }
 
-/*
-int	cd(t_scontext *ctx, char *new_dir)
+int	cd_slash_dots(char *newdir)
+{
+	return (*new_dir == '/'
+		|| ft_strcmp(new_dir, "..") == 0
+		|| ft_strcmp(new_dir, ".") == 0
+		|| ft_strncmp(new_dir, "../", 3) == 0
+		|| ft_strncmp(new_dir, "./", 2) == 0)
+}
+
+int	cd_cmd(t_scontext *ctx, char *new_dir)
 {
 	char		*curpath;
-	const char	*pwd = getenv("PWD");
-	const char	*home = getenv("HOME");
+	char		*temp_path;
+	const char	*pwd = sctx_get_var(ctx, "PWD");
+	const char	*home = sctx_get_var(ctx, "HOME");
 
+	temp_path = NULL;
 	if (!new_dir && *home)
 		new_dir = home;
-	if (*new_dir == '/')
+	else if (ft_strcmp(new_dir, "-") == 0)
+	{
+		cd(ctx, sctx_get_var("OLDPWD"));
+		pwd_cmd();
+	}
+	else if (cd_slash_dots(&new_dir))
 		curpath = new_dir;
-}*/
+	else if (*new_dir != "/")
+	{
+		temp_path = ft_strjoin("/", newdir);
+		curpath = ft_strjoin(pwd, temp_path);
+		free(temp_path);
+	}
+	if (chdir(curpath) != 0)
+		printf("erro cabrao");
+	if (temp_path)
+		free(curpath);
+}
 
 int	pwd_cmd(void)
 {
@@ -165,7 +190,7 @@ int	unset_vars(char const **envp[], char *var_ids[])
 	return (0);
 }
 
-cahr	**remove_vars(char **envp, char new_envp, t_list *vars)
+char	**remove_vars(char **envp, char new_envp, t_list *vars)
 {
 	int i = 0;
 	int	j = 0;
