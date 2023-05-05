@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/25 14:22:48 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/05/01 17:21:11 by leborges         ###   ########.fr       */
+/*   Updated: 2023/05/01 17:30:59 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -173,7 +173,13 @@ int	export_vars(char const **envp[], char *var_ids[])
 
 int	set_var(char const **vars[], char *new_vars[])
 {
-	char const *new_vars[];
+	char const	*new_vars[];
+	char const	*var;
+
+	while (*new_vars)
+	{
+		var = inter_get_var(*vars, *new_vars);
+	}
 }
 
 int	unset_vars(char const **envp[], char *var_ids[])

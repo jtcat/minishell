@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:29:48 by leborges          #+#    #+#             */
-/*   Updated: 2023/04/28 14:51:18 by leborges         ###   ########.fr       */
+/*   Updated: 2023/05/05 15:47:58 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,13 +65,13 @@ void	parse_operators(t_list **token_head, char **str,
 		{
 			*wordlen += 2;
 			*str += 2;
-			*type = operator;
+			*type = ctrl_op;
 		}
 		else
 		{
 			*wordlen += 1;
 			*str += 1;
-			*type = operator;
+			*type = ctrl_op;
 		}
 		store_token(token_head, str, wordlen, type);
 	}
@@ -79,7 +79,7 @@ void	parse_operators(t_list **token_head, char **str,
 	{
 		*wordlen += 1;
 		*str += 1;
-		*type = operator;
+		*type = ctrl_op;
 		store_token(token_head, str, wordlen, type);
 	}
 }

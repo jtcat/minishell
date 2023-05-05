@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:25 by leborges          #+#    #+#             */
-/*   Updated: 2023/04/28 17:46:24 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/05/05 18:16:09 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,12 +23,12 @@
 
 # define PROMPT "minishell >"
 
-enum e_token_type {new_line, name, operator, word, token};
+enum e_token_type {new_line, name, ctrl_op, word, token};
 typedef enum e_token_type	t_token_type;
 
 typedef struct s_token
 {
-	char			*string;
+	char			*str;
 	t_token_type	type;
 }			t_token;
 
@@ -41,11 +41,11 @@ typedef struct s_scontext
 
 typedef struct s_cmd
 {
-	char const	*cmd_name;
 	char const	*args;
 	char const	**exports;
 	char const	*red_in;
 	char const	*red_out;
+	char const	*hd_delim;
 	char const	*envp;
 }	t_cmd;
 
