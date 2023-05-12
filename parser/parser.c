@@ -6,7 +6,7 @@
 /*   By: joaoteix <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 15:15:56 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/05/12 19:12:52 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/05/13 00:06:34 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,20 +52,12 @@ char	*get_tokentype_str(t_token_type type)
 
 t_token	*get_token(t_list **cursor)
 {
-	if (*cursor)
-		return (NULL);
 	return ((t_token *)((*cursor)->content));
 }
 
 bool	test_cursor(t_list **cursor, t_token_type type)
 {
-	t_token	*token = get_token(cursor);
-
-	if (!token || !(token->type == type))
-		return (false);
-	printf("token: %s, type: %s\n", token->str, get_tokentype_str(token->type));
-	return (true);
-	//return (get_token(cursor)->type == type);
+	return (get_token(cursor)->type == type);
 }
 
 void	consume_cursor(t_list **cursor)
@@ -75,10 +67,13 @@ void	consume_cursor(t_list **cursor)
 
 bool	synt_err(char errctx[], t_list **cursor, bool	*parser_err_flag)
 {
+	t_token	*const token = get_token(cursor);
+
 	printf("%s\n", errctx);
-	ft_putstr_fd("minishell: syntax error near unexpected token `", STDERR_FILENO);
-	ft_putstr_fd(get_token(cursor)->str, STDERR_FILENO);
-	ft_putstr_fd("'\n", STDERR_FILENO);
+	if (token->type == eof)
+		ft_putstr_fd(MSH_ERR_PFIX "unexpected end of input\n", STDERR_FILENO);
+	else 
+		ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX "error near unexpected token `%s'\n", token);
 	*parser_err_flag = true;
 	return (false);
 }
@@ -166,7 +161,6 @@ bool	parse_simple_cmd(t_list **cursor, t_list *pipeline, bool *err_flag)
 			ft_lstadd_back(&cmd->args, ft_lstnew(get_token(cursor)->str));
 			consume_cursor(cursor);
 			parse_cmd_suffix(cursor, cmd, err_flag);
-			return (true);
 		}
 		ft_lstadd_back(&pipeline, ft_lstnew(cmd));
 		return (true);
@@ -189,7 +183,7 @@ bool	parse_pipeline_suffix(t_list **cursor, t_list *pipeline, bool *err_flag)
 		return (false);
 	consume_cursor(cursor);
 	if (!parse_simple_cmd(cursor, pipeline, err_flag))
-		return (synt_err("pipeline_err", cursor, err_flag));
+		return (synt_err("pipeline_suffix_err", cursor, err_flag));
 	return (true);
 }
 
@@ -200,7 +194,6 @@ bool	parse_pipeline(t_list **cursor, t_list *pipe_list, bool	*err_flag)
 	pipeline = NULL;
 	if (!parse_simple_cmd(cursor, pipeline, err_flag))
 		return (false);
-	consume_cursor(cursor);
 	while (parse_pipeline_suffix(cursor, pipeline, err_flag))
 		;
 	ft_lstadd_front(&pipe_list, ft_lstnew(pipeline));
@@ -209,7 +202,7 @@ bool	parse_pipeline(t_list **cursor, t_list *pipe_list, bool	*err_flag)
 
 bool	parse_list_suffix(t_list **cursor, t_list *pipe_list, bool	*err_flag)
 {
-	if (!test_cursor(cursor, lst_and) || !test_cursor(cursor, lst_or))
+	if (!test_cursor(cursor, lst_and) && !test_cursor(cursor, lst_or))
 		return (false);
 	consume_cursor(cursor);
 	if (!parse_pipeline(cursor, pipe_list, err_flag))
@@ -225,7 +218,8 @@ bool	parse_tokens(t_list *tokens, t_list *pipe_list)
 	if (!parse_pipeline(&tokens, pipe_list, &err_flag))
 		return (false);
 	while (parse_list_suffix(&tokens, pipe_list, &err_flag))
-	{
-	}
+		;
+	if (!test_cursor(&tokens, eof))
+		return (synt_err("parse_tokens", &tokens, &err_flag));
 	return (!err_flag);
 }
