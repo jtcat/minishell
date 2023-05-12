@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:25 by leborges          #+#    #+#             */
-/*   Updated: 2023/05/12 18:52:00 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/05/12 23:52:17 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,10 +21,12 @@
 # include <readline/history.h>
 # include <stdbool.h>
 # include <libft.h>
+# include <utils.h>
 
-# define PROMPT "minishell >"
+# define MSH_CMD_PROMPT "minishell > "
+# define MSH_ERR_PFIX "minishell: "
 
-enum e_token_type {token, name, pipe_op, word, red_in, red_out, red_out_ap, here_doc, lst_and, lst_or};
+enum e_token_type {word, name, pipe_op, red_in, red_out, red_out_ap, here_doc, lst_and, lst_or, eof};
 typedef enum e_token_type	t_token_type;
 
 typedef struct s_token
