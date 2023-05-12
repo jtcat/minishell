@@ -6,12 +6,13 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/25 14:22:48 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/05/12 13:49:13 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/05/12 18:07:59 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 #include <minishell.h>
+#include <unistd.h>
 
 // Builtin utilities
 //
@@ -31,42 +32,62 @@ int	echo_cmd(char *str[], int opt_n)
 	return (0);
 }
 
-int	cd_slash_dots(char *new_dir)
+int	cd_slash_dots(char const *new_dir)
 {
-	return (*new_dir == '/'
-		|| ft_strcmp(new_dir, "..") == 0
-		|| ft_strcmp(new_dir, ".") == 0
-		|| ft_strncmp(new_dir, "../", 3) == 0
-		|| ft_strncmp(new_dir, "./", 2) == 0);
+	return (*new_dir == '/' || !ft_strcmp(new_dir, "..") || !ft_strcmp(new_dir, ".")
+		|| !ft_strncmp(new_dir, "../", 3)
+		|| !ft_strncmp(new_dir, "./", 2));
+}
+
+char *get_var_id(char const *var)
+{
+	return (ft_substr(var, 0, ft_strchr(var, '=') - var));
+}
+
+char *sctx_getenv(t_scontext *ctx, char *const var_id)
+{
+	char 	**envp = ctx->envp;
+	char	*envp_var_id;
+
+	while (*envp)
+	{
+		envp_var_id = get_var_id(*envp);
+		if (ft_strcmp(envp_var_id, var_id) == 0)
+			return (*envp);
+		free(envp_var_id);
+		envp++;
+	}
+	return (NULL);
 }
 
 int	cd_cmd(t_scontext *ctx, char *new_dir)
 {
-	char		*curpath;
-	char		*temp_path;
-	const char	*pwd = sctx_get_var(ctx, "PWD");
-	const char	*home = sctx_get_var(ctx, "HOME");
+	char	*temp_path;
+	char	*curpath;
+	char	*pwd = sctx_getenv(ctx, "PWD");
+	char	*home = sctx_getenv(ctx, "HOME");
 
 	temp_path = NULL;
 	if (!new_dir && *home)
 		new_dir = home;
-	else if (ft_strcmp(new_dir, "-") == 0)
-	{
-		cd(ctx, sctx_get_var("OLDPWD"));
-		pwd_cmd();
-	}
-	else if (cd_slash_dots(&new_dir))
+	else if (cd_slash_dots(new_dir))
 		curpath = new_dir;
-	else if (*new_dir != "/")
+	else if (*new_dir != '/')
 	{
-		temp_path = ft_strjoin("/", newdir);
+		temp_path = ft_strjoin("/", new_dir);
 		curpath = ft_strjoin(pwd, temp_path);
 		free(temp_path);
 	}
 	if (chdir(curpath) != 0)
-		printf("erro cabrao");
+	{
+		ft_putstr_fd("cd: no such file or directory: ", STDERR_FILENO);
+		ft_putstr_fd(curpath, STDERR_FILENO);
+		ft_putstr_fd("\n", STDERR_FILENO);
+		return (1);
+	}
 	if (temp_path)
 		free(curpath);
+	return (0);
 }
 
 int	pwd_cmd(void)
@@ -81,7 +102,7 @@ int	pwd_cmd(void)
 
 int	env_cmd(t_scontext *ctx)
 {
-	char const*const	*iter = ctx->envp;
+	char *const	*iter = ctx->envp;
 
 	while (*iter)
 		printf("%s\n",*(iter++));
@@ -98,127 +119,107 @@ void	simple_delete(void *content)
 	free(content);
 }
 
-void	add_vars(char **envp, t_list *vars, int envlen)
+t_list	*find_var(char const *old_var, t_list *new_vars)
 {
-	while (vars)
+	char const	*old_id;
+	char const	*new_id;
+
+	while (new_vars)
 	{
-		envp[envlen++] = vars->content;
-		vars = vars->next;
+		old_id = get_var_id(old_var);
+		new_id = get_var_id(new_vars->content);
+
+		if (ft_strcmp(old_id, new_id) == 0)
+			return (new_vars);
+		new_vars = new_vars->next;
 	}
+	return (new_vars);
 }
 
-char const	*sctx_getenv(const char *envp[], char const *const var_id)
+void	add_vars(char *envp[], char *new_envp[], t_list	*new_vars)
 {
+	t_list	*match_new_var;
+
+	match_new_var = NULL;
 	while (*envp)
 	{
-		if (ft_strcmp(*envp, var_id) == 0)
-			return (*envp);
+		match_new_var = find_var(*envp, new_vars);
+		if (match_new_var)
+			*new_envp = match_new_var->content;
+		else 
+			*new_envp = *envp;
+		new_envp++;
 		envp++;
 	}
 }
 
-int	ptrarr_len(void **arr)
+int	export_vars(t_scontext *ctx, t_list *vars)
 {
-	int	len;
-
-	len = 0;
-	while (arr[len++])
-		;
-	return (len);
-}
-
-int	export_vars(char const **envp[], t_list *vars)
-{
-	t_list	*to_remove;
-	char	**new_envp;
+	t_list	*vars_iter;
+	char 	*var_id;
+	char 	**new_envp;
 	int		new_ids;
 
 	new_ids = 0;
-	while (vars)
+	vars_iter = vars;
+	while (vars_iter)
 	{
-		if (sctx_getenv(*envp, vars->content))
-		{
-			ft_lstadd_back(&to_remove, ft_lstnew(vars->content));
+		var_id = get_var_id(vars_iter->content);
+		if (!sctx_getenv(ctx, var_id))
 			new_ids++;
-		}
-		vars = vars->next;
+		free(var_id);
+		vars_iter = vars_iter->next;
 	}
-	new_envp = malloc(sizeof(char *) * (ptrarr_len(*envp) + new_ids));
-	//ft_memcpy(new_envp, *envp, ctx->envp_len * sizeof(char *));
-	add_vars(envp, new_envp, to_remove, vars);
-	ft_lstclear(&to_remove, simple_delete);
-	free(*envp);
-	*envp = new_envp;
+	ctx->envp_len = ctx->envp_len + new_ids;
+	new_envp = malloc(sizeof(char *) * (ctx->envp_len + new_ids));
+	add_vars(ctx->envp, new_envp, vars);
+	ft_lstclear(&vars, simple_delete);
+	free(ctx->envp);
+	ctx->envp = new_envp;
 	return (0);
 }
 
-int	set_var(char const **vars[], char *new_vars[])
+void	remove_vars(char **envp, char **new_envp, t_list *var_ids)
 {
-	char const	*new_vars[];
-	char const	*var;
-
-	while (*new_vars)
+	while (*envp)
 	{
-		var = inter_get_var(*vars, *new_vars);
+		if (!find_var(*envp, var_ids))
+			*new_envp = *envp;
+		envp++;
 	}
 }
 
-int	unset_vars(char const **envp[], char *var_ids[])
+int	unset_vars(t_scontext *ctx, t_list *var_ids)
 {
 	t_list	*to_unset;
-	char	**new_envp;
+	char 	**new_envp;
 	int		old_ids;
 	
 	old_ids = 0;
-	while (*var_ids)
+	to_unset = NULL;
+	while (var_ids)
 	{
-		if (inter_get_var(*envp, var_ids))
+		if (sctx_getenv(ctx, var_ids->content))
 		{
-			ft_lstadd_back(&to_unset, ft_lstnew(*var_ids));
+			ft_lstadd_back(&to_unset, ft_lstnew(var_ids->content));
 			old_ids++;
 		}
-		mew_envp = malloc(sizeof(char *) * (ptrarr_len(*envp) - old_ids));
-		new_envp = remove_vars(envp, new_envp, to_export);
+		var_ids = var_ids->next;
 	}
-	ft_lstclear(&to_export, simple_delete);
-	free(*envp);
-	*envp = new_envp;
+	if (!to_unset)
+		return (0);
+	ctx->envp_len = ctx->envp_len - old_ids;
+	new_envp = malloc(sizeof(char *) * ctx->envp_len);
+	remove_vars(ctx->envp, new_envp, to_unset);
+	ft_lstclear(&to_unset, simple_delete);
+	free(ctx->envp);
+	ctx->envp = new_envp;
 	return (0);
 }
 
-char	**remove_vars(char **envp, char new_envp, t_list *vars)
-{
-	int i = 0;
-	int	j = 0;
-
-	while (vars)
-	{
-		while(envp[i])
-		{
-			if (ft_strcmp(envp[i], vars->content) == 0)
-			{
-				i++;
-				vars = vars->next;
-			}
-			else
-			{
-				new_envp[j] = envp[i];
-				j++;
-				i++;
-			}
-		}
-	}
-	return (new_envp);
-}
-
-int	export_cmd(t_scontext *ctx, char *var_ids[])
+int	export_cmd(t_scontext *ctx, t_list *var_ids)
 {
 	if (!var_ids)
-		env_cmd(ctx);
-	else
-	{
-		export_var(&ctx->envp, var_ids);
-		unset_vars(ctx, var_ids);
-	}
-	return (0);
+		return (env_cmd(ctx));
+	return (export_vars(ctx, var_ids));
 }

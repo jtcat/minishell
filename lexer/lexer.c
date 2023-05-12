@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:29:48 by leborges          #+#    #+#             */
-/*   Updated: 2023/05/11 18:54:40 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/05/12 19:07:53 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ void	store_token(t_list **token_head, char **str, int *wordlen,
 		ft_lstnew(
 			create_token(ft_substr(*str - *wordlen, 0, *wordlen), *type)));
 	*wordlen = 0;
-	*type = token;
+	*type = word;
 }
 
 void	parse_quotes(char **str, int *wordlen, t_token_type *type)
@@ -61,27 +61,26 @@ void	parse_operators(t_list **token_head, char **str,
 {
 	if (**str == '>' || **str == '<')
 	{
-		if (*(*str + 1) == **str)
+		if (*((*str) + 1) == **str)
 		{
 			*wordlen += 2;
+			*type = (**str == '>') * red_out_ap + (**str == '<') * here_doc;
 			*str += 2;
-			*type = **str == '>' * red_out + (**str == '<') * here_doc;
 		}
 		else
 		{
 			*wordlen += 1;
-			*str += 1;
 			*type = (**str == '>') * red_out + (**str == '<') * red_in;
+			*str += 1;
 		}
-		store_token(token_head, str, wordlen, type);
 	}
-	if (**str == '|')
+	else if (**str == '|')
 	{
 		*wordlen += 1;
 		*str += 1;
 		*type = pipe_op;
-		store_token(token_head, str, wordlen, type);
 	}
+	store_token(token_head, str, wordlen, type);
 }
 
 void	parse_wordchar(char **str, int *wordlen)
@@ -109,7 +108,7 @@ t_list	*split_tokens(char *str)
 	t_token_type	type;
 	int				wordlen;
 
-	type = token;
+	type = word;
 	token_head = NULL;
 	wordlen = 0;
 	while (1)

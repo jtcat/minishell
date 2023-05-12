@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:25 by leborges          #+#    #+#             */
-/*   Updated: 2023/05/12 13:09:15 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/05/12 18:52:00 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@
 
 # define PROMPT "minishell >"
 
-enum e_token_type {new_line, name, pipe_op, word, red_in, red_out, red_out_ap, here_doc, lst_and, lst_or};
+enum e_token_type {token, name, pipe_op, word, red_in, red_out, red_out_ap, here_doc, lst_and, lst_or};
 typedef enum e_token_type	t_token_type;
 
 typedef struct s_token
@@ -35,21 +35,25 @@ typedef struct s_token
 
 typedef struct s_scontext
 {
-	char const	**envp;
-	char const	**svars;
-	size_t		envp_len;
+	char 	**envp;
+	char 	**svars;
+	size_t	envp_len;
 }	t_scontext;
 
 typedef struct s_cmd
 {
-	t_list		*args;
-	char const	*red_in;
-	char const	*red_out;
-	char const	*hd_delim;
+	t_list	*args;
+	char	*red_in;
+	char 	*red_out;
+	char 	*hd_delim;
+	bool	ap_out;
 }	t_cmd;
 
 // Lexer
 t_list	*split_tokens(char *str);
+
+// Parser
+bool	parse_tokens(t_list *cursor, t_list *pipe_list);
 
 // Builtins
 int		pwd_cmd(void);

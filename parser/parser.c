@@ -6,7 +6,7 @@
 /*   By: joaoteix <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 15:15:56 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/05/12 01:56:00 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/05/12 19:12:52 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include <minishell.h>
 #include <readline/chardefs.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <unistd.h>
 
 /*
@@ -28,14 +29,43 @@
  * cmd:				list+ '\n'
  */
 
+char	*get_tokentype_str(t_token_type type)
+{
+	if (type == red_out)
+		return "red_out";
+	if (type == red_in)
+		return "red_in";
+	if (type == red_out_ap)
+		return "red_out_ap";
+	if (type == word)
+		return "word";
+	if (type == here_doc)
+		return "here_doc";
+	if (type == pipe_op)
+		return "pipe";
+	if (type == lst_and)
+		return "lst_and";
+	if (type == lst_or)
+		return "lst_or";
+	return "unkown";
+}
+
 t_token	*get_token(t_list **cursor)
 {
+	if (*cursor)
+		return (NULL);
 	return ((t_token *)((*cursor)->content));
 }
 
 bool	test_cursor(t_list **cursor, t_token_type type)
 {
-	return (get_token(cursor)->type == type);
+	t_token	*token = get_token(cursor);
+
+	if (!token || !(token->type == type))
+		return (false);
+	printf("token: %s, type: %s\n", token->str, get_tokentype_str(token->type));
+	return (true);
+	//return (get_token(cursor)->type == type);
 }
 
 void	consume_cursor(t_list **cursor)
@@ -43,8 +73,9 @@ void	consume_cursor(t_list **cursor)
 	*cursor = (*cursor)->next;
 }
 
-bool	synt_err(t_list **cursor, bool	*parser_err_flag)
+bool	synt_err(char errctx[], t_list **cursor, bool	*parser_err_flag)
 {
+	printf("%s\n", errctx);
 	ft_putstr_fd("minishell: syntax error near unexpected token `", STDERR_FILENO);
 	ft_putstr_fd(get_token(cursor)->str, STDERR_FILENO);
 	ft_putstr_fd("'\n", STDERR_FILENO);
@@ -52,44 +83,19 @@ bool	synt_err(t_list **cursor, bool	*parser_err_flag)
 	return (false);
 }
 
-const char	*lex_name(t_list **input)
-{
-	if (ft_isdigit(*(input++)))
-		return (NULL);
-	if (!ft_isalnum(*input) && !(*input == '_'))
-		return (NULL);
-	input++;
-	while (ft_isalnum(*input) || (*input == '_'))
-		input++;
-	return (input);
-}
-
-const char	*lex_assignment(t_list **input)
-{
-	const char	*name;
-
-	name = lex_name(input);
-	if (!name)
-		return(NULL);
-	if (*(name++) != '=')
-		return(NULL);
-	input = lex_word(input);
-	return (input);
-}
-
-void	assign_redirect(t_cmd *cmd, t_token_type red_type, char const *filename)
+void	assign_redirect(t_cmd *cmd, t_token_type red_type, char *filename)
 {
 	if (red_type == red_in)
 		cmd->red_in = filename;
 	else if (red_type == red_out)
 	{
 		cmd->red_out = filename;
-		cmd->append_out = false;
+		cmd->ap_out = false;
 	}
 	else if (red_type == red_out_ap)
 	{
 		cmd->red_out = filename;
-		cmd->append_out = true;
+		cmd->ap_out = true;
 	}
 	else if (red_type == here_doc)
 	{
@@ -109,17 +115,17 @@ bool	parse_redirect(t_list **cursor, t_cmd *cmd, bool *err_flag)
 	red_type = get_token(cursor)->type;
 	consume_cursor(cursor);
 	if (!test_cursor(cursor, word))
-		return (synt_err(cursor, err_flag));
-	assign_redirect(red_type, get_token(cursor)->str);
+		return (synt_err("redirect_err", cursor, err_flag));
+	assign_redirect(cmd, red_type, get_token(cursor)->str);
 	consume_cursor(cursor);
 	return (true);
 }
 
 bool	parse_cmd_prefix(t_list **cursor, t_cmd *cmd, bool	*err_flag)
 {
-	if (!parse_redirect(cursor, cmd, err_flag) && !lex_assignment(cursor))
+	if (!parse_redirect(cursor, cmd, err_flag))
 		return (false);
-	while (parse_redirect(cursor, cmd, err_flag) || lex_assignment(cursor))
+	while (parse_redirect(cursor, cmd, err_flag))
 		;
 	return (true);
 }
@@ -128,16 +134,31 @@ bool	parse_cmd_suffix(t_list	**cursor, t_cmd *cmd, bool *err_flag)
 {
 	if (!parse_redirect(cursor, cmd, err_flag) && !test_cursor(cursor, word))
 		return (false);
+	if (test_cursor(cursor, word))
+		consume_cursor(cursor);
 	while (parse_redirect(cursor, cmd, err_flag) || test_cursor(cursor, word))
-		;
+		if (test_cursor(cursor, word))
+			consume_cursor(cursor);
 	return (true);
+}
+
+void	destroy_cmd(t_cmd *cmd)
+{
+	ft_lstclear(&cmd->args, free);
+	if (cmd->red_in)
+		free(cmd->red_in);
+	if (cmd->red_out)
+		free(cmd->red_out);
+	if (cmd->hd_delim)
+		free(cmd->hd_delim);
+	free(cmd);
 }
 
 bool	parse_simple_cmd(t_list **cursor, t_list *pipeline, bool *err_flag)
 {
 	t_cmd	*cmd;
 
-	cmd = malloc(sizeof(t_cmd));
+	cmd = ft_calloc(1, sizeof(t_cmd));
 	if (parse_cmd_prefix(cursor, cmd, err_flag))
 	{
 		if (test_cursor(cursor, word))
@@ -168,7 +189,7 @@ bool	parse_pipeline_suffix(t_list **cursor, t_list *pipeline, bool *err_flag)
 		return (false);
 	consume_cursor(cursor);
 	if (!parse_simple_cmd(cursor, pipeline, err_flag))
-		return (synt_err(cursor, err_flag));
+		return (synt_err("pipeline_err", cursor, err_flag));
 	return (true);
 }
 
@@ -192,19 +213,19 @@ bool	parse_list_suffix(t_list **cursor, t_list *pipe_list, bool	*err_flag)
 		return (false);
 	consume_cursor(cursor);
 	if (!parse_pipeline(cursor, pipe_list, err_flag))
-		return (synt_err(cursor, err_flag));
+		return (synt_err("list_suffix_err", cursor, err_flag));
 	return (true);
 }
 
-bool	parse_list(t_list **cursor, t_list *pipe_list)
+bool	parse_tokens(t_list *tokens, t_list *pipe_list)
 {
 	bool	err_flag;
 
 	err_flag = false;
-	if (!parse_pipeline(cursor, pipe_list, &err_flag))
-		return (synt_err(cursor, &err_flag));
-	while (parse_list_suffix(cursor, pipe_list, &err_flag))
+	if (!parse_pipeline(&tokens, pipe_list, &err_flag))
+		return (false);
+	while (parse_list_suffix(&tokens, pipe_list, &err_flag))
 	{
 	}
-	return (err_flag);
+	return (!err_flag);
 }
