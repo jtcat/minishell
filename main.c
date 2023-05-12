@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:28 by leborges          #+#    #+#             */
-/*   Updated: 2023/05/12 19:09:15 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/05/13 00:03:56 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,20 +33,20 @@ int	main(int argc, char *argv[], char const *envp[])
 	pipe_list = NULL;
 	if (argc == 1)
 	{
-		input = readline(PROMPT);
+		input = readline(MSH_CMD_PROMPT);
 		while (input)
 		{
 			tokens = iter = split_tokens(input);
+			while (iter)
+			{
+				printf("Data: %s | Token: %u\n", ((t_token *)iter->content)->str, ((t_token *)iter->content)->type);
+				iter = iter->next;
+			}
 			parse_tokens(tokens, pipe_list);
-//			while (iter)
-//			{
-//				printf("Data: %s | Token: %u\n", ((t_token *)iter->content)->str, ((t_token *)iter->content)->type);
-//				iter = iter->next;
-//			}
 			ft_lstclear(&tokens, delete_token);
 			add_history(input);
 			free(input);
-			input = readline(PROMPT);
+			input = readline(MSH_CMD_PROMPT);
 		}
 		rl_clear_history();
 //		env_cmd(&ctx);
