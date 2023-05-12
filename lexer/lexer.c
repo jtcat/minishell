@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:29:48 by leborges          #+#    #+#             */
-/*   Updated: 2023/05/05 15:47:58 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/05/11 18:54:40 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ t_token	*create_token(char *s, t_token_type type)
 	t_token	*token;
 
 	token = malloc(sizeof(t_token));
-	token->string = s;
+	token->str = s;
 	token->type = type;
 	return (token);
 }
@@ -65,13 +65,13 @@ void	parse_operators(t_list **token_head, char **str,
 		{
 			*wordlen += 2;
 			*str += 2;
-			*type = ctrl_op;
+			*type = **str == '>' * red_out + (**str == '<') * here_doc;
 		}
 		else
 		{
 			*wordlen += 1;
 			*str += 1;
-			*type = ctrl_op;
+			*type = (**str == '>') * red_out + (**str == '<') * red_in;
 		}
 		store_token(token_head, str, wordlen, type);
 	}
@@ -79,7 +79,7 @@ void	parse_operators(t_list **token_head, char **str,
 	{
 		*wordlen += 1;
 		*str += 1;
-		*type = ctrl_op;
+		*type = pipe_op;
 		store_token(token_head, str, wordlen, type);
 	}
 }

@@ -11,7 +11,7 @@ NAME:= minishell
 LFT_DIR:= libft
 LFT:= $(LFT_DIR)/libft.a
 
-SRCS = main.c ./lexer/lexer.c ./builtins/builtins.c ./utils/str_utils.c
+SRCS = main.c ./lexer/lexer.c ./utils/str_utils.c #parser/parser.c ./builtins/builtins.c 
 
 OBJS = $(SRCS:.c=.o)
 

@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:25 by leborges          #+#    #+#             */
-/*   Updated: 2023/05/05 18:16:09 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/05/12 13:09:15 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,11 +19,12 @@
 # include <stdlib.h>
 # include <readline/readline.h>
 # include <readline/history.h>
+# include <stdbool.h>
 # include <libft.h>
 
 # define PROMPT "minishell >"
 
-enum e_token_type {new_line, name, ctrl_op, word, token};
+enum e_token_type {new_line, name, pipe_op, word, red_in, red_out, red_out_ap, here_doc, lst_and, lst_or};
 typedef enum e_token_type	t_token_type;
 
 typedef struct s_token
@@ -41,12 +42,10 @@ typedef struct s_scontext
 
 typedef struct s_cmd
 {
-	char const	*args;
-	char const	**exports;
+	t_list		*args;
 	char const	*red_in;
 	char const	*red_out;
 	char const	*hd_delim;
-	char const	*envp;
 }	t_cmd;
 
 // Lexer
