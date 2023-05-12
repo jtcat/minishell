@@ -6,122 +6,92 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:29:48 by leborges          #+#    #+#             */
-/*   Updated: 2023/05/12 19:07:53 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/05/12 23:51:48 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "libft.h"
 #include <minishell.h>
-#include <str_utils.h>
 
-t_token	*create_token(char *s, t_token_type type)
+void	store_token(t_list **token_list, char *start, char *end,
+		t_token_type type)
 {
 	t_token	*token;
 
 	token = malloc(sizeof(t_token));
-	token->str = s;
-	token->type = type;
-	return (token);
-}
-
-void	store_token(t_list **token_head, char **str, int *wordlen,
-		t_token_type *type)
-{
-	if (*wordlen == 0)
-		return ;
-	ft_lstadd_back(token_head,
-		ft_lstnew(
-			create_token(ft_substr(*str - *wordlen, 0, *wordlen), *type)));
-	*wordlen = 0;
-	*type = word;
-}
-
-void	parse_quotes(char **str, int *wordlen, t_token_type *type)
-{
-	const char	*end_quote;
-
-	while (is_quote(**str))
-	{
-		end_quote = ft_strchr(*str + 1, **str);
-		if (end_quote)
-		{
-			*wordlen += ++end_quote - *str;
-			*str = (char *)end_quote;
-			*type = word;
-		}
-		else
-		{
-			(*str)++;
-			*wordlen = 0;
-		}
-	}
-}
-
-void	parse_operators(t_list **token_head, char **str,
-		int *wordlen, t_token_type *type)
-{
-	if (**str == '>' || **str == '<')
-	{
-		if (*((*str) + 1) == **str)
-		{
-			*wordlen += 2;
-			*type = (**str == '>') * red_out_ap + (**str == '<') * here_doc;
-			*str += 2;
-		}
-		else
-		{
-			*wordlen += 1;
-			*type = (**str == '>') * red_out + (**str == '<') * red_in;
-			*str += 1;
-		}
-	}
-	else if (**str == '|')
-	{
-		*wordlen += 1;
-		*str += 1;
-		*type = pipe_op;
-	}
-	store_token(token_head, str, wordlen, type);
-}
-
-void	parse_wordchar(char **str, int *wordlen)
-{
-	(*str)++;
-	(*wordlen)++;
-}
-
-int	parse_delim(t_list **token_head, char **str,
-		int *wordlen, t_token_type *type)
-{
-	store_token(token_head, str, wordlen, type);
-	if (is_op(**str))
-		parse_operators(token_head, str, wordlen, type);
-	else if (**str == '\0')
-		return (1);
+	if (type == eof)
+		token->str = ft_strdup("");
 	else
-		(*str)++;
-	return (0);
+		token->str = ft_substr(start, 0, end - start + 1);
+	token->type = type;
+	ft_lstadd_back(token_list, ft_lstnew(token));
+}
+
+bool	lex_word(t_list **token_list, char **cursor)
+{
+	char	*word_start;
+	char	*quote_end;
+
+	if (!is_wordchar(**cursor))
+		return (false);
+	word_start = *cursor;
+	while (is_wordchar(**cursor))
+	{
+		if (**cursor == '\'' || **cursor == '"')
+		{
+			quote_end = ft_strchr(*cursor + 1, **cursor);
+			if (quote_end)
+				*cursor = quote_end;
+			else
+			{
+				ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX "unclosed quote at: `%c'\n", **cursor);
+				return (false);
+			}
+		}
+		(*cursor)++;
+	}
+	store_token(token_list, word_start, *cursor - 1, word);
+	return (true);
+}
+
+bool	lex_op(t_list **token_list, char **cursor)
+{
+	char			*token_start;
+	t_token_type	type;
+
+	if (!is_op(**cursor))
+		return (false);
+	type = word;
+	token_start = (*cursor);
+	type = (**cursor == '>') * red_out
+		+ (**cursor == '<') * red_in
+		+ (**cursor == '|') * pipe_op;
+	(*cursor)++;
+	if (**cursor == *token_start)
+	{
+		type = (**cursor == '>') * red_out_ap
+			+ (**cursor == '<') * here_doc
+			+ (**cursor == '&') * lst_and
+			+ (**cursor == '|') * lst_or;
+		(*cursor)++;
+	}
+	store_token(token_list, token_start, *cursor - 1, type);
+	return (true);
+}
+
+void	skip(char	**cursor)
+{
+	while (**cursor && !is_wordchar(**cursor) && !is_op(**cursor))
+		(*cursor)++;
 }
 
 t_list	*split_tokens(char *str)
 {
-	t_list			*token_head;
-	t_token_type	type;
-	int				wordlen;
+	t_list			*token_list;
 
-	type = word;
-	token_head = NULL;
-	wordlen = 0;
-	while (1)
-	{
-		if (is_quote(*str))
-			parse_quotes(&str, &wordlen, &type);
-		if (is_delim(*str))
-		{
-			if (parse_delim(&token_head, &str, &wordlen, &type))
-				break ;
-		}
-		else
-			parse_wordchar(&str, &wordlen);
-	}
-	return (token_head);
+	token_list = NULL;
+	while (lex_op(&token_list, &str) || lex_word(&token_list, &str))
+		skip(&str);
+	store_token(&token_list, NULL, NULL, eof);
+	return (token_list);
 }
