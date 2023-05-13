@@ -6,7 +6,7 @@
 /*   By: joaoteix <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 15:15:56 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/05/13 00:06:34 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/05/13 01:37:21 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,13 +67,16 @@ void	consume_cursor(t_list **cursor)
 
 bool	synt_err(char errctx[], t_list **cursor, bool	*parser_err_flag)
 {
-	t_token	*const token = get_token(cursor);
+	t_token *const	token = get_token(cursor);
 
+	if (*parser_err_flag)
+		return (false);
 	printf("%s\n", errctx);
 	if (token->type == eof)
 		ft_putstr_fd(MSH_ERR_PFIX "unexpected end of input\n", STDERR_FILENO);
-	else 
-		ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX "error near unexpected token `%s'\n", token);
+	else
+		ft_dprintf(STDERR_FILENO,
+			MSH_ERR_PFIX "error near unexpected token `%s'\n", token->str);
 	*parser_err_flag = true;
 	return (false);
 }
@@ -103,9 +106,9 @@ bool	parse_redirect(t_list **cursor, t_cmd *cmd, bool *err_flag)
 	t_token_type	red_type;
 
 	if (!(test_cursor(cursor, red_in)
-		|| test_cursor(cursor, red_out)
-		|| test_cursor(cursor, red_out_ap)
-		|| test_cursor(cursor, here_doc)))
+			|| test_cursor(cursor, red_out)
+			|| test_cursor(cursor, red_out_ap)
+			|| test_cursor(cursor, here_doc)))
 		return (false);
 	red_type = get_token(cursor)->type;
 	consume_cursor(cursor);
@@ -149,7 +152,7 @@ void	destroy_cmd(t_cmd *cmd)
 	free(cmd);
 }
 
-bool	parse_simple_cmd(t_list **cursor, t_list *pipeline, bool *err_flag)
+bool	parse_simple_cmd(t_list **cursor, t_list **pipeline, bool *err_flag)
 {
 	t_cmd	*cmd;
 
@@ -162,7 +165,7 @@ bool	parse_simple_cmd(t_list **cursor, t_list *pipeline, bool *err_flag)
 			consume_cursor(cursor);
 			parse_cmd_suffix(cursor, cmd, err_flag);
 		}
-		ft_lstadd_back(&pipeline, ft_lstnew(cmd));
+		ft_lstadd_back(pipeline, ft_lstnew(cmd));
 		return (true);
 	}
 	else if (test_cursor(cursor, word))
@@ -170,37 +173,37 @@ bool	parse_simple_cmd(t_list **cursor, t_list *pipeline, bool *err_flag)
 		ft_lstadd_back(&cmd->args, ft_lstnew(get_token(cursor)->str));
 		consume_cursor(cursor);
 		parse_cmd_suffix(cursor, cmd, err_flag);
-		ft_lstadd_back(&pipeline, ft_lstnew(cmd));
+		ft_lstadd_back(pipeline, ft_lstnew(cmd));
 		return (true);
 	}
 	destroy_cmd(cmd);
 	return (false);
 }
 
-bool	parse_pipeline_suffix(t_list **cursor, t_list *pipeline, bool *err_flag)
+bool	parse_pipeline_suffix(t_list **curs, t_list **pipeline, bool *err_flag)
 {
-	if (!test_cursor(cursor, pipe_op))
+	if (!test_cursor(curs, pipe_op))
 		return (false);
-	consume_cursor(cursor);
-	if (!parse_simple_cmd(cursor, pipeline, err_flag))
-		return (synt_err("pipeline_suffix_err", cursor, err_flag));
+	consume_cursor(curs);
+	if (!parse_simple_cmd(curs, pipeline, err_flag))
+		return (synt_err("pipeline_suffix_err", curs, err_flag));
 	return (true);
 }
 
-bool	parse_pipeline(t_list **cursor, t_list *pipe_list, bool	*err_flag)
+bool	parse_pipeline(t_list **cursor, t_list **pipe_list, bool	*err_flag)
 {
 	t_list	*pipeline;
 
 	pipeline = NULL;
-	if (!parse_simple_cmd(cursor, pipeline, err_flag))
+	if (!parse_simple_cmd(cursor, &pipeline, err_flag))
 		return (false);
-	while (parse_pipeline_suffix(cursor, pipeline, err_flag))
+	while (parse_pipeline_suffix(cursor, &pipeline, err_flag))
 		;
-	ft_lstadd_front(&pipe_list, ft_lstnew(pipeline));
+	ft_lstadd_front(pipe_list, ft_lstnew(pipeline));
 	return (true);
 }
 
-bool	parse_list_suffix(t_list **cursor, t_list *pipe_list, bool	*err_flag)
+bool	parse_list_suffix(t_list **cursor, t_list **pipe_list, bool	*err_flag)
 {
 	if (!test_cursor(cursor, lst_and) && !test_cursor(cursor, lst_or))
 		return (false);
@@ -210,16 +213,22 @@ bool	parse_list_suffix(t_list **cursor, t_list *pipe_list, bool	*err_flag)
 	return (true);
 }
 
-bool	parse_tokens(t_list *tokens, t_list *pipe_list)
+bool	parse_list(t_list **cursor, t_list **pipe_list, bool *err_flag)
+{
+	if (!parse_pipeline(cursor, pipe_list, err_flag))
+		return (false);
+	while (parse_list_suffix(cursor, pipe_list, err_flag))
+		;
+	return (true);
+}
+
+bool	parse_input(t_list *input, t_list **pipe_list)
 {
 	bool	err_flag;
 
 	err_flag = false;
-	if (!parse_pipeline(&tokens, pipe_list, &err_flag))
-		return (false);
-	while (parse_list_suffix(&tokens, pipe_list, &err_flag))
-		;
-	if (!test_cursor(&tokens, eof))
-		return (synt_err("parse_tokens", &tokens, &err_flag));
+	parse_list(&input, pipe_list, &err_flag);
+	if (!test_cursor(&input, eof))
+		return (synt_err("parse_tokens", &input, &err_flag));
 	return (!err_flag);
 }
