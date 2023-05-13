@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:25 by leborges          #+#    #+#             */
-/*   Updated: 2023/05/12 23:52:17 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/05/13 00:37:57 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,7 @@ typedef struct s_cmd
 t_list	*split_tokens(char *str);
 
 // Parser
-bool	parse_tokens(t_list *cursor, t_list *pipe_list);
+bool	parse_input(t_list *input, t_list **pipe_list);
 
 // Builtins
 int		pwd_cmd(void);
