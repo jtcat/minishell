@@ -6,9 +6,11 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 23:33:09 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/05/12 22:32:19 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/05/19 13:23:30 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+#include <stdlib.h>
 
 int	is_blank(char c)
 {
@@ -29,6 +31,16 @@ int	is_blank_str(char str[])
 {
 	while (*str)
 		if (!is_blank(*str++))
-				return (0);
+			return (0);
 	return (1);
+}
+
+void	free_ptrarr(void **arr, void (*del)(void *))
+{
+	void	**iter;
+
+	iter = arr;
+	while (*iter)
+		del(*(iter++));
+	free(arr);
 }

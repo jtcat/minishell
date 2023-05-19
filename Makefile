@@ -1,6 +1,6 @@
 CC:= cc
 
-CFLAGS:= -o0 -g -Wall -Werror -Wextra
+CFLAGS:= -o0 -g -Wall #-Werror# -Wextra
 
 LIB_FLAGS:= -lreadline
 
@@ -11,7 +11,11 @@ NAME:= minishell
 LFT_DIR:= libft
 LFT:= $(LFT_DIR)/libft.a
 
-SRCS = main.c ./lexer/lexer.c ./utils/str_utils.c parser/parser.c #./builtins/builtins.c 
+SRCS = src/main.c \
+	$(addprefix lexer/,lexer.c) \
+	$(addprefix utils/,str_utils.c) \
+	$(addprefix, parser/,parser.c) \
+	#./builtins/builtins.c 
 
 OBJS = $(SRCS:.c=.o)
 

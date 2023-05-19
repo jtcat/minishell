@@ -6,11 +6,12 @@
 /*   By: joaoteix <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 15:15:56 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/05/13 01:37:21 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/05/19 13:03:46 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
+#include <cstdlib>
 #include <minishell.h>
 #include <readline/chardefs.h>
 #include <stdbool.h>
@@ -128,28 +129,23 @@ bool	parse_cmd_prefix(t_list **cursor, t_cmd *cmd, bool	*err_flag)
 	return (true);
 }
 
+void	add_cmd_arg(t_list **cursor, t_cmd *cmd)
+{
+	ft_lstadd_back(&cmd->args, ft_lstnew(get_token(cursor)->str));
+	cmd->arg_n++;
+	consume_cursor(cursor);
+}
+
 bool	parse_cmd_suffix(t_list	**cursor, t_cmd *cmd, bool *err_flag)
 {
 	if (!parse_redirect(cursor, cmd, err_flag) && !test_cursor(cursor, word))
 		return (false);
 	if (test_cursor(cursor, word))
-		consume_cursor(cursor);
+		add_cmd_arg(cursor, cmd);
 	while (parse_redirect(cursor, cmd, err_flag) || test_cursor(cursor, word))
 		if (test_cursor(cursor, word))
-			consume_cursor(cursor);
+			add_cmd_arg(cursor, cmd);
 	return (true);
-}
-
-void	destroy_cmd(t_cmd *cmd)
-{
-	ft_lstclear(&cmd->args, free);
-	if (cmd->red_in)
-		free(cmd->red_in);
-	if (cmd->red_out)
-		free(cmd->red_out);
-	if (cmd->hd_delim)
-		free(cmd->hd_delim);
-	free(cmd);
 }
 
 bool	parse_simple_cmd(t_list **cursor, t_list **pipeline, bool *err_flag)
@@ -161,8 +157,7 @@ bool	parse_simple_cmd(t_list **cursor, t_list **pipeline, bool *err_flag)
 	{
 		if (test_cursor(cursor, word))
 		{
-			ft_lstadd_back(&cmd->args, ft_lstnew(get_token(cursor)->str));
-			consume_cursor(cursor);
+			add_cmd_arg(cursor, cmd);
 			parse_cmd_suffix(cursor, cmd, err_flag);
 		}
 		ft_lstadd_back(pipeline, ft_lstnew(cmd));
@@ -170,32 +165,32 @@ bool	parse_simple_cmd(t_list **cursor, t_list **pipeline, bool *err_flag)
 	}
 	else if (test_cursor(cursor, word))
 	{
-		ft_lstadd_back(&cmd->args, ft_lstnew(get_token(cursor)->str));
-		consume_cursor(cursor);
+		add_cmd_arg(cursor, cmd);
 		parse_cmd_suffix(cursor, cmd, err_flag);
 		ft_lstadd_back(pipeline, ft_lstnew(cmd));
 		return (true);
 	}
-	destroy_cmd(cmd);
+	del_cmd(cmd);
 	return (false);
 }
 
-bool	parse_pipeline_suffix(t_list **curs, t_list **pipeline, bool *err_flag)
+bool	parse_pipeline_suffix(t_list **curs, t_ppline **pipeline, bool *err_flag)
 {
 	if (!test_cursor(curs, pipe_op))
 		return (false);
 	consume_cursor(curs);
-	if (!parse_simple_cmd(curs, pipeline, err_flag))
+	if (!parse_simple_cmd(curs, &(*pipeline)->cmds, err_flag))
 		return (synt_err("pipeline_suffix_err", curs, err_flag));
+	(*pipeline)->pipe_n++;
 	return (true);
 }
 
 bool	parse_pipeline(t_list **cursor, t_list **pipe_list, bool	*err_flag)
 {
-	t_list	*pipeline;
+	t_ppline	*pipeline;
 
-	pipeline = NULL;
-	if (!parse_simple_cmd(cursor, &pipeline, err_flag))
+	pipeline = ft_calloc(1, sizeof(t_ppline));
+	if (!parse_simple_cmd(cursor, &pipeline->cmds, err_flag))
 		return (false);
 	while (parse_pipeline_suffix(cursor, &pipeline, err_flag))
 		;

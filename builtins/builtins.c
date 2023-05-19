@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/25 14:22:48 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/05/12 18:07:59 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/05/15 11:41:22 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,20 +14,24 @@
 #include <minishell.h>
 #include <unistd.h>
 
+#define ERRC_CD_ARGS 127
+
 // Builtin utilities
 //
 // Return values represent exit status
 
-int	echo_cmd(char *str[], int opt_n)
+int	echo_cmd(char *args[])
 {	
-	while (*str)
+	const int	n_opt = ft_strcmp(args[0], "-n") == 0;
+
+	while (*args)
 	{
-		ft_putstr_fd(*str, STDOUT_FILENO);
-		str++;
-		if (*str)
+		ft_putstr_fd(*args, STDOUT_FILENO);
+		args++;
+		if (*args)
 			ft_putchar_fd(' ', STDOUT_FILENO);
 	}
-	if (!opt_n)
+	if (!n_opt)
 		ft_putchar_fd('\n', STDOUT_FILENO);
 	return (0);
 }
@@ -60,7 +64,7 @@ char *sctx_getenv(t_scontext *ctx, char *const var_id)
 	return (NULL);
 }
 
-int	cd_cmd(t_scontext *ctx, char *new_dir)
+int	cd(t_scontext *ctx, char *new_dir)
 {
 	char	*temp_path;
 	char	*curpath;
@@ -90,6 +94,14 @@ int	cd_cmd(t_scontext *ctx, char *new_dir)
 	return (0);
 }
 
+int	cd_cmd(t_scontext *ctx, char **args)
+{
+	if (*(args + 1) == NULL)
+		return (cd(ctx, *args));
+	ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX "cd: too many arguments\n");
+	return (ERRC_CD_ARGS);
+}
+
 int	pwd_cmd(void)
 {
 	char	*cwd;
@@ -109,9 +121,10 @@ int	env_cmd(t_scontext *ctx)
 	return (0);
 }
 
-void	exit_cmd(unsigned char exit_code)
+int	exit_cmd(t_scontext *ctx, char **args)
 {
-	exit((int)exit_code);
+	ft_putstr_fd("exit\n", STDERR_FILENO);
+	exit((int));
 }
 
 void	simple_delete(void *content)
