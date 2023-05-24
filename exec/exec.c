@@ -6,12 +6,13 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/13 02:13:40 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/05/19 13:37:11 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/05/24 00:04:06 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 #include "minishell.h"
+#include <utils.h>
 #include <errno.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -19,35 +20,80 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <utils.h>
 
 #define ERR_CMD 127
 
-void	close_pipes(int	*pipes[2])
+void	close_pipes(int	(*pipes)[2])
 {
 	while (*pipes)
 	{
 		close((*pipes)[0]);
 		close((*pipes)[1]);
-		(*pipes)++;
+		pipes++;
 	}
 	free(pipes);
 }
 
+void	str_concat(char **dst_ref, char *src)
+{
+	char	*tmp;
+
+	tmp = ft_strjoin(*dst_ref, src);
+	free(*dst_ref);
+	*dst_ref = tmp;
+}
+
+char	*expand_var(t_scontext *ctx, char *cursor, char **expansion)
+{
+	char const	*start = cursor;
+	char		**env_i;
+	int			id_len;
+
+	while (ft_isalnum(*cursor) || *cursor == '_')
+		(cursor)++;
+	if (cursor == start)
+		return (NULL);
+	id_len = cursor - start;
+	env_i = ctx->envp;
+	while (*env_i && ft_strncmp(*env_i, start, id_len) != 0)
+		env_i++;
+	if (env_i)
+		str_concat(expansion, ft_strchr(*env_i, '=') + 1);
+	return (cursor);
+}
+
+// Word unquoting and parameter expasion.
+// This is garbage and does not work
 char	*expand_word(t_scontext *ctx, char **word_ref)
 {
-	char	*start;
-	char	*end;
+	char	*cursor;
+	char	*word_start;
 	char	*expansion;
 
-	start = *word_ref;
-	end = *word_ref;
+	cursor = *word_ref;
+	word_start = *word_ref;
 	expansion = ft_strdup("");
-	while (is_wordchar(*end))
+	while (is_wordchar(*cursor))
 	{
-		if (*end == '\'')
-			ft_strjoin(expansion, ft_substr(end, 0, ft_strchr(end, '\'') - end + 1));
+		if (*cursor == '\'')
+		{
+			str_concat(&expansion, ft_substr(word_start, 0, cursor - word_start));
+			cursor = ft_strchr(cursor, '\''); 
+			str_concat(&expansion, ft_substr(word_start, 1, cursor - word_start - 1));
+			word_start = cursor + 1;
+		}
+		else if (*cursor == '"')
+		{
+			str_concat(&expansion, ft_substr(word_start, 0, cursor - word_start));
+			while (*cursor != '"')
+				if (*cursor == '$')
+					word_start = expand_var(ctx, cursor, &expansion);
+		}
+		else if (*cursor == '$')
+			word_start = expand_var(ctx, cursor, &expansion);
+		cursor++;
 	}
+	str_concat(&expansion, ft_substr(word_start, 0, cursor - word_start));
 	*word_ref = expansion;
 	return (expansion);
 }
@@ -65,7 +111,7 @@ int	try_file_redir(t_scontext *ctx, char **fname_ref, int redir_from)
 	return (redir_to);
 }
 
-bool	apply_redirs(t_scontext *ctx, t_cmd *cmd, int *pipes[2], int pipe_i)
+bool	apply_redirs(t_scontext *ctx, t_cmd *cmd, int (*pipes)[2], int pipe_i)
 {
 	int	fd_in;
 	int	fd_out;
@@ -89,21 +135,27 @@ bool	apply_redirs(t_scontext *ctx, t_cmd *cmd, int *pipes[2], int pipe_i)
 bool	resolve_cmd(t_scontext *ctx, char **cmd_path_ref)
 {
 	char	**path_dirs;
-	char	*temp_path;
+	char	*cmd_suffix;
+	char	*tmp_path;
 
 	if (**cmd_path_ref == '.' || **cmd_path_ref == '/')
-	{
 		return (!access(*cmd_path_ref, X_OK));
-	}
 	path_dirs = ft_split(ft_strchr(sctx_getenv(ctx, "PATH"), '=') + 1, ':');
-	if (!path_dirs)
+	cmd_suffix = ft_strjoin("/", *cmd_path_ref);
+	while (*path_dirs)
 	{
-		ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX "%s: " MSH_FILE_ERR_MSG "\n", *cmd_path_ref);						
-		return (false);
-	}
-	else
-
+		tmp_path = ft_strjoin(*(path_dirs++), cmd_suffix);
+		if (!access(tmp_path, X_OK))
+		{
+			free(cmd_suffix);
+			return (tmp_path);
+		}
+		free(tmp_path);
+	}	
+	ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX "%s: " MSH_FILE_ERR_MSG "\n", *cmd_path_ref);						
+	free(cmd_suffix);
 	free_ptrarr((void **)path_dirs, free);
+	return (NULL);
 }
 
 char	**expand_args(t_scontext *ctx, t_cmd *cmd)
@@ -116,7 +168,7 @@ char	**expand_args(t_scontext *ctx, t_cmd *cmd)
 	arg_iter = cmd->args->next;
 	while (arg_iter)
 	{
-		args[cmd->arg_n] = expand_word(ctx, &get_token(&arg_iter)->str);
+		args[cmd->arg_n] = expand_word(ctx, (char **)&arg_iter->content);
 		arg_iter = arg_iter->next;
 	}
 	return (args);
@@ -124,34 +176,43 @@ char	**expand_args(t_scontext *ctx, t_cmd *cmd)
 
 bool	try_exec_builtin(t_scontext *ctx, t_cmd	*cmd)
 {
-	char	*cmd_name = get_token(&cmd->args)->str;
+	char	*cmd_name = (char *)cmd->args->content;
 	char	**args = expand_args(ctx, cmd);
 
 	if (ft_strcmp(cmd_name, "echo"))
-		return (echo_cmd(args));
+		ctx->cmd_status = echo_cmd(args);
 	else if (ft_strcmp(cmd_name, "pwd"))
-		return (pwd_cmd());
+		ctx->cmd_status = pwd_cmd();
 	else if (ft_strcmp(cmd_name, "cd"))
-		return (cd_cmd(ctx, args));
+		ctx->cmd_status = cd_cmd(ctx, args);
 	else if (ft_strcmp(cmd_name, "export"))
-		return (export_cmd(ctx, args));
+		ctx->cmd_status = export_cmd(ctx, args);
 	else if (ft_strcmp(cmd_name, "unset"))
-		return (unset_cmd(ctx, args));
+		ctx->cmd_status = unset_cmd(ctx, args);
 	else if (ft_strcmp(cmd_name, "env"))
-		return (env_cmd(ctx));
+		ctx->cmd_status = env_cmd(ctx);
 	else if (ft_strcmp(cmd_name, "exit"))
-		return (exit_cmd(ctx, args));
+		ctx->cmd_status = exit_cmd(ctx, args);
+	else
+	{
+		free(args);
+	 	return (false);
+	}
 	free(args);
-	return (false);
+	return (true);
 }
 
+// PROBLEM: non piped builtins dont use fork() in order to affect
+// current shell (like export and exit). This messes up the redirects
+// by changing the shell's std input and output. FIX THIS
+//
 // pipe_i == -1 means that the pipeline contains only one command
-void	exec_cmd(t_cmd *cmd, t_scontext *ctx, int *pipes[2], int pipe_i)
+void	exec_cmd(t_cmd *cmd, t_scontext *ctx, int (*pipes)[2], int pipe_i)
 {
 	int		pid;
 	char	**args;
 
-	expand_word(ctx, &get_token(&cmd->args)->str);
+	expand_word(ctx, (char **)&cmd->args->content);
 	if (pipe_i == -1 && try_exec_builtin(ctx, cmd))
 	{
 		ctx->cmd_status = 0;
@@ -162,8 +223,8 @@ void	exec_cmd(t_cmd *cmd, t_scontext *ctx, int *pipes[2], int pipe_i)
 		return ;
 	if (!apply_redirs(ctx, cmd, pipes, pipe_i))
 		exit(ERR_CMD);
-	if (!try_exec_builtin(ctx, cmd))
-		if (!resolve_cmd(ctx, &get_token(cmd->args->content)->str))
+	if (pipe_i == -1 || !try_exec_builtin(ctx, cmd))
+		if (!resolve_cmd(ctx, (char **)&cmd->args->content))
 			exit(ERR_CMD);
 	args = expand_args(ctx, cmd);
 	execve(args[0], args, ctx->envp);
@@ -178,30 +239,27 @@ int	exec_pipeline(t_scontext *ctx, t_list *cmd_lst, int pipe_n)
 	pipes[pipe_n] = NULL;
 	while (cmd_lst)
 	{
-		exec_cmd((t_cmd *)(cmd_lst->content), ctx, pipes, --pipe_n);
+		exec_cmd((t_cmd *)(cmd_lst->content), ctx, (int (*)[2])pipes, --pipe_n);
 		cmd_lst = cmd_lst->next;
 	}
 	while (wait(&ctx->cmd_status) > 0)
 		;
 	//if (errno != ECHILD)
-	close_pipes(pipes);
+	close_pipes((int (*)[2])pipes);
 	return (ctx->cmd_status);
 }
 
-int	exec_cmdlist(t_scontext *ctx, t_list *ppline_lst)
+void	exec_cmdlist(t_scontext *ctx, t_list *ppline_lst)
 {
-	int			last_exit;
 	t_ppline	*ppline;
 
-	last_exit = 0;
 	while (ppline_lst)
 	{
 		ppline = ((t_ppline *)(ppline_lst->content));
 		if (ppline->op == lst_no_op
-				|| (ppline->op == lst_and && last_exit == 0) 
-				|| (ppline->op == lst_or && last_exit > 0))
-			last_exit = exec_pipeline(ctx, ppline->cmds, ppline->pipe_n);
+				|| (ppline->op == lst_and && ctx->cmd_status == 0) 
+				|| (ppline->op == lst_or && ctx->cmd_status > 0))
+			ctx->cmd_status = exec_pipeline(ctx, ppline->cmds, ppline->pipe_n);
 		ppline_lst = ppline_lst->next;
 	}
-	return (last_exit);
 }

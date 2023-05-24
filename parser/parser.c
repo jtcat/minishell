@@ -6,17 +6,13 @@
 /*   By: joaoteix <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 15:15:56 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/05/19 13:03:46 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/05/23 14:09:24 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
-#include <cstdlib>
 #include <minishell.h>
-#include <readline/chardefs.h>
-#include <stdbool.h>
-#include <stdio.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 /*
  * Command grammar:
@@ -70,9 +66,9 @@ bool	synt_err(char errctx[], t_list **cursor, bool	*parser_err_flag)
 {
 	t_token *const	token = get_token(cursor);
 
+	(void)errctx;
 	if (*parser_err_flag)
 		return (false);
-	printf("%s\n", errctx);
 	if (token->type == eof)
 		ft_putstr_fd(MSH_ERR_PFIX "unexpected end of input\n", STDERR_FILENO);
 	else
@@ -190,6 +186,7 @@ bool	parse_pipeline(t_list **cursor, t_list **pipe_list, bool	*err_flag)
 	t_ppline	*pipeline;
 
 	pipeline = ft_calloc(1, sizeof(t_ppline));
+	pipeline->op = lst_no_op;
 	if (!parse_simple_cmd(cursor, &pipeline->cmds, err_flag))
 		return (false);
 	while (parse_pipeline_suffix(cursor, &pipeline, err_flag))
@@ -202,6 +199,7 @@ bool	parse_list_suffix(t_list **cursor, t_list **pipe_list, bool	*err_flag)
 {
 	if (!test_cursor(cursor, lst_and) && !test_cursor(cursor, lst_or))
 		return (false);
+	((t_ppline *)(*pipe_list)->content)->op = get_token(cursor)->type;
 	consume_cursor(cursor);
 	if (!parse_pipeline(cursor, pipe_list, err_flag))
 		return (synt_err("list_suffix_err", cursor, err_flag));

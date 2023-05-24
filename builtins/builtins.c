@@ -6,13 +6,15 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/25 14:22:48 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/05/15 11:41:22 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/05/23 14:33:34 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
+#include <utils.h>
 #include <minishell.h>
 #include <unistd.h>
+#include <stdio.h>
 
 #define ERRC_CD_ARGS 127
 
@@ -20,7 +22,7 @@
 //
 // Return values represent exit status
 
-int	echo_cmd(char *args[])
+int	echo_cmd(char **args)
 {	
 	const int	n_opt = ft_strcmp(args[0], "-n") == 0;
 
@@ -57,7 +59,10 @@ char *sctx_getenv(t_scontext *ctx, char *const var_id)
 	{
 		envp_var_id = get_var_id(*envp);
 		if (ft_strcmp(envp_var_id, var_id) == 0)
-			return (*envp);
+		{
+			free(envp_var_id);
+			return (ft_strchr(*envp, '=') + 1);
+		}
 		free(envp_var_id);
 		envp++;
 	}
@@ -123,42 +128,51 @@ int	env_cmd(t_scontext *ctx)
 
 int	exit_cmd(t_scontext *ctx, char **args)
 {
+	if (!is_num(*args))
+	{
+		ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX "exit: %s\n", *args);
+		sctx_destroy(ctx);
+		exit(2);
+	}
+	if (*(args + 1) != NULL)
+	{
+		ft_putstr_fd(MSH_ERR_PFIX "exit: too many arguments\n", STDERR_FILENO);
+		return (1);
+	}
+	sctx_destroy(ctx);
 	ft_putstr_fd("exit\n", STDERR_FILENO);
-	exit((int));
+	if (*args == NULL)
+		exit(ctx->cmd_status);
+	exit(ft_atoi(*args));
 }
 
-void	simple_delete(void *content)
-{
-	free(content);
-}
-
-t_list	*find_var(char const *old_var, t_list *new_vars)
+char	*find_var(char const *old_var, char **new_vars)
 {
 	char const	*old_id;
 	char const	*new_id;
 
-	while (new_vars)
+	while (*new_vars)
 	{
 		old_id = get_var_id(old_var);
-		new_id = get_var_id(new_vars->content);
+		new_id = get_var_id(*new_vars);
 
 		if (ft_strcmp(old_id, new_id) == 0)
-			return (new_vars);
-		new_vars = new_vars->next;
+			return (*new_vars);
+		new_vars++;
 	}
-	return (new_vars);
+	return (*new_vars);
 }
 
-void	add_vars(char *envp[], char *new_envp[], t_list	*new_vars)
+void	add_vars(char *envp[], char *new_envp[], char **new_vars)
 {
-	t_list	*match_new_var;
+	char	*match_new_var;
 
 	match_new_var = NULL;
 	while (*envp)
 	{
 		match_new_var = find_var(*envp, new_vars);
 		if (match_new_var)
-			*new_envp = match_new_var->content;
+			*new_envp = ft_strdup(match_new_var);
 		else 
 			*new_envp = *envp;
 		new_envp++;
@@ -166,33 +180,33 @@ void	add_vars(char *envp[], char *new_envp[], t_list	*new_vars)
 	}
 }
 
-int	export_vars(t_scontext *ctx, t_list *vars)
+// Need to validate ID: failing an assigment does not prevent others
+int	export_vars(t_scontext *ctx, char **vars)
 {
-	t_list	*vars_iter;
+	char	**vars_iter;
 	char 	*var_id;
 	char 	**new_envp;
 	int		new_ids;
 
 	new_ids = 0;
 	vars_iter = vars;
-	while (vars_iter)
+	while (*vars_iter)
 	{
-		var_id = get_var_id(vars_iter->content);
+		var_id = get_var_id(*vars_iter);
 		if (!sctx_getenv(ctx, var_id))
 			new_ids++;
 		free(var_id);
-		vars_iter = vars_iter->next;
+		vars_iter++;
 	}
 	ctx->envp_len = ctx->envp_len + new_ids;
 	new_envp = malloc(sizeof(char *) * (ctx->envp_len + new_ids));
 	add_vars(ctx->envp, new_envp, vars);
-	ft_lstclear(&vars, simple_delete);
 	free(ctx->envp);
 	ctx->envp = new_envp;
 	return (0);
 }
 
-void	remove_vars(char **envp, char **new_envp, t_list *var_ids)
+void	remove_vars(char **envp, char **new_envp, char **var_ids)
 {
 	while (*envp)
 	{
@@ -202,35 +216,29 @@ void	remove_vars(char **envp, char **new_envp, t_list *var_ids)
 	}
 }
 
-int	unset_vars(t_scontext *ctx, t_list *var_ids)
+int	unset_cmd(t_scontext *ctx, char **var_ids)
 {
-	t_list	*to_unset;
 	char 	**new_envp;
 	int		old_ids;
 	
+	if (*var_ids == NULL)
+		return (0);
 	old_ids = 0;
-	to_unset = NULL;
 	while (var_ids)
 	{
-		if (sctx_getenv(ctx, var_ids->content))
-		{
-			ft_lstadd_back(&to_unset, ft_lstnew(var_ids->content));
+		if (sctx_getenv(ctx, *var_ids))
 			old_ids++;
-		}
-		var_ids = var_ids->next;
+		var_ids++;
 	}
-	if (!to_unset)
-		return (0);
 	ctx->envp_len = ctx->envp_len - old_ids;
 	new_envp = malloc(sizeof(char *) * ctx->envp_len);
-	remove_vars(ctx->envp, new_envp, to_unset);
-	ft_lstclear(&to_unset, simple_delete);
+	remove_vars(ctx->envp, new_envp, var_ids);
 	free(ctx->envp);
 	ctx->envp = new_envp;
 	return (0);
 }
 
-int	export_cmd(t_scontext *ctx, t_list *var_ids)
+int	export_cmd(t_scontext *ctx, char **var_ids)
 {
 	if (!var_ids)
 		return (env_cmd(ctx));

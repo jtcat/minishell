@@ -12,10 +12,11 @@ LFT_DIR:= libft
 LFT:= $(LFT_DIR)/libft.a
 
 SRCS = src/main.c \
-	$(addprefix lexer/,lexer.c) \
-	$(addprefix utils/,str_utils.c) \
-	$(addprefix, parser/,parser.c) \
-	#./builtins/builtins.c 
+	$(addprefix lexer/, lexer.c) \
+	$(addprefix utils/, str_utils.c) \
+	$(addprefix parser/, parser.c) \
+	$(addprefix exec/, exec.c) \
+	$(addprefix builtins/, builtins.c) \
 
 OBJS = $(SRCS:.c=.o)
 

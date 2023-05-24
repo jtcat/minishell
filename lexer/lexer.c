@@ -6,11 +6,13 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:29:48 by leborges          #+#    #+#             */
-/*   Updated: 2023/05/12 23:51:48 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/05/20 00:02:10 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
+#include "utils.h"
+#include <unistd.h>
 #include <minishell.h>
 
 void	store_token(t_list **token_list, char *start, char *end,
@@ -44,7 +46,8 @@ bool	lex_word(t_list **token_list, char **cursor)
 				*cursor = quote_end;
 			else
 			{
-				ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX "unclosed quote at: `%c'\n", **cursor);
+				ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX
+						"unclosed quote at: `%c'\n", **cursor);
 				return (false);
 			}
 		}
