@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/13 02:13:40 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/05/25 20:10:12 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/05/25 20:29:54 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -173,10 +173,11 @@ char	**expand_args(t_scontext *ctx, t_cmd *cmd)
 	char	**args;
 	int		arg_i;
 
-	args = malloc(sizeof(char *) * cmd->arg_n);
+	args = malloc(sizeof(char *) * (cmd->arg_n + 1));
 	args[cmd->arg_n] = NULL;
-	arg_iter = cmd->args;
-	arg_i = 0;
+	args[0] = cmd->args->content;
+	arg_iter = cmd->args->next;
+	arg_i = 1;
 	while (arg_iter)
 	{
 		args[arg_i++] = expand_word(ctx, (char **)&arg_iter->content);
