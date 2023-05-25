@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:28 by leborges          #+#    #+#             */
-/*   Updated: 2023/05/25 17:18:02 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/05/25 20:19:20 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,7 +76,7 @@ char	**dup_envp(char const *envp[])
 	new_envp = malloc(sizeof(char *) * (len + 1));
 	new_envp[len] = NULL;
 	while (len-- > 0)
-		new_envp[len] = (char *)envp[len];
+		new_envp[len] = ft_strdup((char *)envp[len]);
 	return (new_envp);
 }
 
@@ -111,7 +111,7 @@ int	main(int argc, char *argv[], char const *envp[])
 			free(ctx.input);
 			ctx.input = readline(MSH_CMD_PROMPT);
 		}
-		rl_clear_history();
+		sctx_destroy(&ctx);
 //		env_cmd(&ctx);
 //		pwd_cmd();
 //		echo_cmd((char *[]){"ATMD4\n", NULL}, 0);

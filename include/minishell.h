@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:25 by leborges          #+#    #+#             */
-/*   Updated: 2023/05/23 13:47:11 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/05/25 19:39:27 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 # define MSH_CMD_PROMPT "minishell > "
 # define MSH_FILE_ERR_MSG "No such file or directory"
 # define MSH_ERR_PFIX "minishell: "
+# define MSH_CMD_NFOUND_ERR "command not found"
 
 enum e_token_type {none, word, name, pipe_op, red_in, red_out, red_out_ap, here_doc, lst_and, lst_or, lst_no_op, eof};
 typedef enum e_token_type	t_token_type;

@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/13 02:13:40 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/05/25 17:24:47 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/05/25 20:10:12 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,27 +134,36 @@ bool	apply_redirs(t_scontext *ctx, t_cmd *cmd, int *pipes, int pipe_i)
 bool	resolve_cmd(t_scontext *ctx, char **cmd_path_ref)
 {
 	char	**path_dirs;
+	char	**path_iter;
 	char	*cmd_suffix;
 	char	*tmp_path;
 
-	if (**cmd_path_ref == '.' || **cmd_path_ref == '/')
+	if (ft_strchr(*cmd_path_ref, '/'))
 		return (!access(*cmd_path_ref, X_OK));
-	path_dirs = ft_split(ft_strchr(sctx_getenv(ctx, "PATH"), '=') + 1, ':');
-	cmd_suffix = ft_strjoin("/", *cmd_path_ref);
-	while (*path_dirs)
+	path_dirs = ft_split(sctx_getenv(ctx, "PATH"), ':');
+	if (!path_dirs)
 	{
-		tmp_path = ft_strjoin(*(path_dirs++), cmd_suffix);
+		ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX "%s: " MSH_FILE_ERR_MSG "\n", *cmd_path_ref);						
+		return (false);
+	}
+	path_iter = path_dirs;
+	cmd_suffix = ft_strjoin("/", *cmd_path_ref);
+	while (*path_iter)
+	{
+		tmp_path = ft_strjoin(*(path_iter++), cmd_suffix);
 		if (!access(tmp_path, X_OK))
 		{
 			free(cmd_suffix);
-			return (tmp_path);
+			free(*cmd_path_ref);
+			*cmd_path_ref = tmp_path;
+			return (true);
 		}
 		free(tmp_path);
 	}	
-	ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX "%s: " MSH_FILE_ERR_MSG "\n", *cmd_path_ref);						
+	ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX "%s: " MSH_CMD_NFOUND_ERR "\n", *cmd_path_ref);						
 	free(cmd_suffix);
 	free_ptrarr((void **)path_dirs, free);
-	return (NULL);
+	return (false);
 }
 
 // Returns string array with every argument expanded
@@ -166,7 +175,7 @@ char	**expand_args(t_scontext *ctx, t_cmd *cmd)
 
 	args = malloc(sizeof(char *) * cmd->arg_n);
 	args[cmd->arg_n] = NULL;
-	arg_iter = cmd->args->next;
+	arg_iter = cmd->args;
 	arg_i = 0;
 	while (arg_iter)
 	{
@@ -182,19 +191,19 @@ bool	try_exec_builtin(t_scontext *ctx, t_cmd	*cmd)
 	char	**args = expand_args(ctx, cmd);
 
 	if (!ft_strcmp(cmd_name, "echo"))
-		ctx->cmd_status = echo_cmd(args);
+		ctx->cmd_status = echo_cmd(args + 1);
 	else if (!ft_strcmp(cmd_name, "pwd"))
 		ctx->cmd_status = pwd_cmd();
 	else if (!ft_strcmp(cmd_name, "cd"))
-		ctx->cmd_status = cd_cmd(ctx, args);
+		ctx->cmd_status = cd_cmd(ctx, args + 1);
 	else if (!ft_strcmp(cmd_name, "export"))
-		ctx->cmd_status = export_cmd(ctx, args);
+		ctx->cmd_status = export_cmd(ctx, args + 1);
 	else if (!ft_strcmp(cmd_name, "unset"))
-		ctx->cmd_status = unset_cmd(ctx, args);
+		ctx->cmd_status = unset_cmd(ctx, args + 1);
 	else if (!ft_strcmp(cmd_name, "env"))
 		ctx->cmd_status = env_cmd(ctx);
 	else if (!ft_strcmp(cmd_name, "exit"))
-		ctx->cmd_status = exit_cmd(ctx, args);
+		ctx->cmd_status = exit_cmd(ctx, args + 1);
 	else
 	{
 		free(args);

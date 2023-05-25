@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/25 14:22:48 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/05/25 17:30:58 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/05/25 20:12:21 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,6 @@
 #define ERRC_CD_ARGS 127
 
 // Builtin utilities
-//
 // Return values represent exit status
 
 int	echo_cmd(char **args)
@@ -131,16 +130,19 @@ int	env_cmd(t_scontext *ctx)
 
 int	exit_cmd(t_scontext *ctx, char **args)
 {
-	if (!is_num(*args))
+	if (*args)
 	{
-		ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX "exit: %s\n", *args);
-		sctx_destroy(ctx);
-		exit(2);
-	}
-	if (*(args + 1) != NULL)
-	{
-		ft_putstr_fd(MSH_ERR_PFIX "exit: too many arguments\n", STDERR_FILENO);
-		return (1);
+		if (!is_num(*args))
+		{
+			ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX "exit: %s\n", *args);
+			sctx_destroy(ctx);
+			exit(2);
+		}
+		if (*(args + 1) != NULL)
+		{
+			ft_putstr_fd(MSH_ERR_PFIX "exit: too many arguments\n", STDERR_FILENO);
+			return (1);
+		}
 	}
 	sctx_destroy(ctx);
 	ft_putstr_fd("exit\n", STDERR_FILENO);
