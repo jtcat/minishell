@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/25 14:22:48 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/05/23 14:33:34 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/05/25 17:30:58 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,8 +24,11 @@
 
 int	echo_cmd(char **args)
 {	
-	const int	n_opt = ft_strcmp(args[0], "-n") == 0;
+	int	n_opt;
 
+	n_opt = *args && ft_strcmp(args[0], "-n") == 0;
+	if (n_opt)
+		args++;
 	while (*args)
 	{
 		ft_putstr_fd(*args, STDOUT_FILENO);

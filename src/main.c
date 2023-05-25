@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:28 by leborges          #+#    #+#             */
-/*   Updated: 2023/05/23 14:06:43 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/05/25 17:18:02 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,8 +102,8 @@ int	main(int argc, char *argv[], char const *envp[])
 			if (!is_blank_str(ctx.input))
 			{
 				ctx.tokens = split_tokens(ctx.input);
-				parse_input(ctx.tokens, &ctx.cmd_list);
-				exec_cmdlist(&ctx, ctx.cmd_list);
+				if (parse_input(ctx.tokens, &ctx.cmd_list))
+					exec_cmdlist(&ctx, ctx.cmd_list);
 				ft_lstclear(&ctx.tokens, del_token);
 				ft_lstclear(&ctx.cmd_list, del_pipe);
 				add_history(ctx.input);

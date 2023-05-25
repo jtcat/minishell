@@ -6,12 +6,13 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/13 02:13:40 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/05/24 00:04:06 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/05/25 17:24:47 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 #include "minishell.h"
+#include <limits.h>
 #include <utils.h>
 #include <errno.h>
 #include <stdbool.h>
@@ -23,15 +24,17 @@
 
 #define ERR_CMD 127
 
-void	close_pipes(int	(*pipes)[2])
+void	close_pipes(int	*pipes, int pipe_n)
 {
-	while (*pipes)
+	int	*pipe;
+
+	while (pipe_n-- > 0)
 	{
-		close((*pipes)[0]);
-		close((*pipes)[1]);
+		pipe = pipes + 2 * pipe_n;
+		close(pipe[0]);
+		close(pipe[1]);
 		pipes++;
 	}
-	free(pipes);
 }
 
 void	str_concat(char **dst_ref, char *src)
@@ -108,27 +111,23 @@ int	try_file_redir(t_scontext *ctx, char **fname_ref, int redir_from)
 		return (-1);
 	}
 	dup2(redir_to, redir_from);
+	close(redir_to);
 	return (redir_to);
 }
 
-bool	apply_redirs(t_scontext *ctx, t_cmd *cmd, int (*pipes)[2], int pipe_i)
+bool	apply_redirs(t_scontext *ctx, t_cmd *cmd, int *pipes, int pipe_i)
 {
-	int	fd_in;
-	int	fd_out;
-
 	if (pipe_i > 0)
-		dup2(pipes[pipe_i][0], STDIN_FILENO);
+		dup2((pipes + 2 * pipe_i)[0], STDIN_FILENO);
 	if (pipe_i >= 0)
-		dup2(pipes[pipe_i][1], STDOUT_FILENO);
-	close_pipes(pipes);
-	fd_in = try_file_redir(ctx, &cmd->red_in, STDIN_FILENO);
-	if (fd_in < 0)
-		return (false);
-	close(fd_in);
-	fd_out = try_file_redir(ctx, &cmd->red_out, STDOUT_FILENO);
-	if (fd_out < 0)
-		return (false);
-	close(fd_out);
+		dup2((pipes + 2 * pipe_i)[1], STDOUT_FILENO);
+	close_pipes(pipes, pipe_i);
+	if (cmd->red_in)
+		return (try_file_redir(ctx, &cmd->red_in, STDIN_FILENO)
+				>= 0);
+	if (cmd->red_out)
+		return (try_file_redir(ctx, &cmd->red_out, STDOUT_FILENO)
+			>= 0);
 	return (true);
 }
 
@@ -158,17 +157,20 @@ bool	resolve_cmd(t_scontext *ctx, char **cmd_path_ref)
 	return (NULL);
 }
 
+// Returns string array with every argument expanded
 char	**expand_args(t_scontext *ctx, t_cmd *cmd)
 {
 	t_list	*arg_iter;
 	char	**args;
+	int		arg_i;
 
-	args = malloc(sizeof(char *) * (cmd->arg_n + 1));
+	args = malloc(sizeof(char *) * cmd->arg_n);
 	args[cmd->arg_n] = NULL;
 	arg_iter = cmd->args->next;
+	arg_i = 0;
 	while (arg_iter)
 	{
-		args[cmd->arg_n] = expand_word(ctx, (char **)&arg_iter->content);
+		args[arg_i++] = expand_word(ctx, (char **)&arg_iter->content);
 		arg_iter = arg_iter->next;
 	}
 	return (args);
@@ -179,19 +181,19 @@ bool	try_exec_builtin(t_scontext *ctx, t_cmd	*cmd)
 	char	*cmd_name = (char *)cmd->args->content;
 	char	**args = expand_args(ctx, cmd);
 
-	if (ft_strcmp(cmd_name, "echo"))
+	if (!ft_strcmp(cmd_name, "echo"))
 		ctx->cmd_status = echo_cmd(args);
-	else if (ft_strcmp(cmd_name, "pwd"))
+	else if (!ft_strcmp(cmd_name, "pwd"))
 		ctx->cmd_status = pwd_cmd();
-	else if (ft_strcmp(cmd_name, "cd"))
+	else if (!ft_strcmp(cmd_name, "cd"))
 		ctx->cmd_status = cd_cmd(ctx, args);
-	else if (ft_strcmp(cmd_name, "export"))
+	else if (!ft_strcmp(cmd_name, "export"))
 		ctx->cmd_status = export_cmd(ctx, args);
-	else if (ft_strcmp(cmd_name, "unset"))
+	else if (!ft_strcmp(cmd_name, "unset"))
 		ctx->cmd_status = unset_cmd(ctx, args);
-	else if (ft_strcmp(cmd_name, "env"))
+	else if (!ft_strcmp(cmd_name, "env"))
 		ctx->cmd_status = env_cmd(ctx);
-	else if (ft_strcmp(cmd_name, "exit"))
+	else if (!ft_strcmp(cmd_name, "exit"))
 		ctx->cmd_status = exit_cmd(ctx, args);
 	else
 	{
@@ -207,11 +209,16 @@ bool	try_exec_builtin(t_scontext *ctx, t_cmd	*cmd)
 // by changing the shell's std input and output. FIX THIS
 //
 // pipe_i == -1 means that the pipeline contains only one command
-void	exec_cmd(t_cmd *cmd, t_scontext *ctx, int (*pipes)[2], int pipe_i)
+void	exec_cmd(t_cmd *cmd, t_scontext *ctx, int *pipes, int pipe_i)
 {
 	int		pid;
 	char	**args;
 
+	if (!apply_redirs(ctx, cmd, pipes, pipe_i))
+	{
+		ctx->cmd_status = 1;
+		return ;
+	}
 	expand_word(ctx, (char **)&cmd->args->content);
 	if (pipe_i == -1 && try_exec_builtin(ctx, cmd))
 	{
@@ -221,8 +228,6 @@ void	exec_cmd(t_cmd *cmd, t_scontext *ctx, int (*pipes)[2], int pipe_i)
 	pid = fork();
 	if (pid > 0)
 		return ;
-	if (!apply_redirs(ctx, cmd, pipes, pipe_i))
-		exit(ERR_CMD);
 	if (pipe_i == -1 || !try_exec_builtin(ctx, cmd))
 		if (!resolve_cmd(ctx, (char **)&cmd->args->content))
 			exit(ERR_CMD);
@@ -233,19 +238,29 @@ void	exec_cmd(t_cmd *cmd, t_scontext *ctx, int (*pipes)[2], int pipe_i)
 
 int	exec_pipeline(t_scontext *ctx, t_list *cmd_lst, int pipe_n)
 {
-	int	**pipes;
+	int	ifd;
+	int	ofd;
+	int	*pipes;
+	int	pipe_i;
 
-	pipes = malloc(sizeof(int[2]) * (pipe_n + 1));
-	pipes[pipe_n] = NULL;
+	pipes = malloc(sizeof(int) * 2 * pipe_n);
+	pipe_i = -1;
 	while (cmd_lst)
 	{
-		exec_cmd((t_cmd *)(cmd_lst->content), ctx, (int (*)[2])pipes, --pipe_n);
+		ifd = dup(STDIN_FILENO);
+		ofd = dup(STDOUT_FILENO);
+		if (cmd_lst->next)
+			pipe(pipes + 2 * ++pipe_i);
+		exec_cmd((t_cmd *)(cmd_lst->content), ctx, pipes, pipe_i);
+		dup2(ifd, STDIN_FILENO);
+		dup2(ofd, STDOUT_FILENO);
 		cmd_lst = cmd_lst->next;
 	}
 	while (wait(&ctx->cmd_status) > 0)
 		;
 	//if (errno != ECHILD)
-	close_pipes((int (*)[2])pipes);
+	close_pipes(pipes, pipe_n);
+	free(pipes);
 	return (ctx->cmd_status);
 }
 
