@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:29:48 by leborges          #+#    #+#             */
-/*   Updated: 2023/05/20 00:02:10 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/05/26 15:12:12 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ bool	lex_word(t_list **token_list, char **cursor)
 			else
 			{
 				ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX
-						"unclosed quote at: `%c'\n", **cursor);
+					"unclosed quote at: `%c'\n", **cursor);
 				return (false);
 			}
 		}

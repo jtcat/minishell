@@ -14,7 +14,7 @@ LFT:= $(LFT_DIR)/libft.a
 SRCS = src/main.c \
 	$(addprefix lexer/, lexer.c) \
 	$(addprefix utils/, str_utils.c) \
-	$(addprefix parser/, parser.c) \
+	$(addprefix parser/, grammar.c grammar2.c parser_utils.c) \
 	$(addprefix exec/, exec.c) \
 	$(addprefix builtins/, builtins.c) \
 
