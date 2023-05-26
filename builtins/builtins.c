@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/25 14:22:48 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/05/25 20:12:21 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/05/26 00:07:20 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@
 // Builtin utilities
 // Return values represent exit status
 
-int	echo_cmd(char **args)
+int	echo_cmd(t_scontext *ctx, char **args)
 {	
 	int	n_opt;
 
@@ -109,7 +109,7 @@ int	cd_cmd(t_scontext *ctx, char **args)
 	return (ERRC_CD_ARGS);
 }
 
-int	pwd_cmd(void)
+int	pwd_cmd(t_scontext *ctx, char **args)
 {
 	char	*cwd;
 
@@ -119,7 +119,7 @@ int	pwd_cmd(void)
 	return (0);
 }
 
-int	env_cmd(t_scontext *ctx)
+int	env_cmd(t_scontext *ctx, char **args)
 {
 	char *const	*iter = ctx->envp;
 
@@ -134,7 +134,7 @@ int	exit_cmd(t_scontext *ctx, char **args)
 	{
 		if (!is_num(*args))
 		{
-			ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX "exit: %s\n", *args);
+			ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX "exit: non numeric argument: %s\n", *args);
 			sctx_destroy(ctx);
 			exit(2);
 		}
@@ -246,6 +246,6 @@ int	unset_cmd(t_scontext *ctx, char **var_ids)
 int	export_cmd(t_scontext *ctx, char **var_ids)
 {
 	if (!var_ids)
-		return (env_cmd(ctx));
+		return (env_cmd(ctx, var_ids));
 	return (export_vars(ctx, var_ids));
 }

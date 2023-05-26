@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:28 by leborges          #+#    #+#             */
-/*   Updated: 2023/05/25 20:19:20 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/05/26 00:09:54 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,7 @@ void	del_cmd(void *content)
 		free(cmd->red_out);
 	if (cmd->hd_delim)
 		free(cmd->hd_delim);
+	free(cmd);
 }
 
 void	del_pipe(void *content)
@@ -59,6 +60,7 @@ void	del_pipe(void *content)
 
 void	sctx_destroy(t_scontext *ctx)
 {
+	free(ctx->input);
 	free_ptrarr((void **)ctx->envp, free);
 	ft_lstclear(&ctx->tokens, del_token);
 	ft_lstclear(&ctx->cmd_list, del_pipe);
@@ -89,6 +91,7 @@ int	main(int argc, char *argv[], char const *envp[])
 	ctx.cmd_list = NULL;
 	ctx.tokens = NULL;
 	ctx.envp = dup_envp(envp);
+	ctx.cmd_status = 0;
 	if (argc == 1)
 	{
 		ctx.input = readline(MSH_CMD_PROMPT);

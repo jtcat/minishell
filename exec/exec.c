@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/13 02:13:40 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/05/25 20:29:54 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/05/26 01:02:16 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ void	str_concat(char **dst_ref, char *src)
 	char	*tmp;
 
 	tmp = ft_strjoin(*dst_ref, src);
+	free(src);
 	free(*dst_ref);
 	*dst_ref = tmp;
 }
@@ -67,14 +68,14 @@ char	*expand_var(t_scontext *ctx, char *cursor, char **expansion)
 
 // Word unquoting and parameter expasion.
 // This is garbage and does not work
-char	*expand_word(t_scontext *ctx, char **word_ref)
+char	*expand_word(t_scontext *ctx, char *word_ref)
 {
 	char	*cursor;
 	char	*word_start;
 	char	*expansion;
 
-	cursor = *word_ref;
-	word_start = *word_ref;
+	cursor = word_ref;
+	word_start = word_ref;
 	expansion = ft_strdup("");
 	while (is_wordchar(*cursor))
 	{
@@ -97,14 +98,15 @@ char	*expand_word(t_scontext *ctx, char **word_ref)
 		cursor++;
 	}
 	str_concat(&expansion, ft_substr(word_start, 0, cursor - word_start));
-	*word_ref = expansion;
 	return (expansion);
 }
 
-int	try_file_redir(t_scontext *ctx, char **fname_ref, int redir_from)
+int	try_file_redir(t_scontext *ctx, char *fname_ref, int redir_from)
 {
-	const int redir_to = open(expand_word(ctx, fname_ref), 0, O_RDONLY);
+	char * const	exp_filename = expand_word(ctx, fname_ref);
+	const int redir_to = open(exp_filename, 0, O_RDONLY);
 
+	free(exp_filename);
 	if (redir_to < 0)
 	{
 		perror(MSH_ERR_PFIX);
@@ -115,20 +117,27 @@ int	try_file_redir(t_scontext *ctx, char **fname_ref, int redir_from)
 	return (redir_to);
 }
 
-bool	apply_redirs(t_scontext *ctx, t_cmd *cmd, int *pipes, int pipe_i)
+int	apply_redirs(t_scontext *ctx, t_cmd *cmd, int *pipes, int pipe_i)
 {
+	int * const	ppipe = pipes + 2 * pipe_i;
+
 	if (pipe_i > 0)
-		dup2((pipes + 2 * pipe_i)[0], STDIN_FILENO);
-	if (pipe_i >= 0)
-		dup2((pipes + 2 * pipe_i)[1], STDOUT_FILENO);
-	close_pipes(pipes, pipe_i);
+	{
+		dup2(ppipe[0], STDIN_FILENO);
+		close(ppipe[0]);
+	}
+	if (pipe_i >= 0 && pipe_i )
+	{
+		dup2(ppipe[1], STDOUT_FILENO);
+		close(ppipe[1]);
+	}
 	if (cmd->red_in)
-		return (try_file_redir(ctx, &cmd->red_in, STDIN_FILENO)
-				>= 0);
+		return (try_file_redir(ctx, cmd->red_in, STDIN_FILENO)
+				< 0);
 	if (cmd->red_out)
-		return (try_file_redir(ctx, &cmd->red_out, STDOUT_FILENO)
-			>= 0);
-	return (true);
+		return (try_file_redir(ctx, cmd->red_out, STDOUT_FILENO)
+			< 0);
+	return (0);
 }
 
 bool	resolve_cmd(t_scontext *ctx, char **cmd_path_ref)
@@ -154,7 +163,6 @@ bool	resolve_cmd(t_scontext *ctx, char **cmd_path_ref)
 		if (!access(tmp_path, X_OK))
 		{
 			free(cmd_suffix);
-			free(*cmd_path_ref);
 			*cmd_path_ref = tmp_path;
 			return (true);
 		}
@@ -180,7 +188,7 @@ char	**expand_args(t_scontext *ctx, t_cmd *cmd)
 	arg_i = 1;
 	while (arg_iter)
 	{
-		args[arg_i++] = expand_word(ctx, (char **)&arg_iter->content);
+		args[arg_i++] = expand_word(ctx, (char *)arg_iter->content);
 		arg_iter = arg_iter->next;
 	}
 	return (args);
@@ -188,61 +196,58 @@ char	**expand_args(t_scontext *ctx, t_cmd *cmd)
 
 bool	try_exec_builtin(t_scontext *ctx, t_cmd	*cmd)
 {
-	char	*cmd_name = (char *)cmd->args->content;
-	char	**args = expand_args(ctx, cmd);
+	const char	*cmd_name = (char *)cmd->args->content;
+	char	**args;
+	int		(*builtin_func)(t_scontext *, char **);
 
 	if (!ft_strcmp(cmd_name, "echo"))
-		ctx->cmd_status = echo_cmd(args + 1);
+		builtin_func = echo_cmd;
 	else if (!ft_strcmp(cmd_name, "pwd"))
-		ctx->cmd_status = pwd_cmd();
+		builtin_func = pwd_cmd;
 	else if (!ft_strcmp(cmd_name, "cd"))
-		ctx->cmd_status = cd_cmd(ctx, args + 1);
+		builtin_func = cd_cmd;
 	else if (!ft_strcmp(cmd_name, "export"))
-		ctx->cmd_status = export_cmd(ctx, args + 1);
+		builtin_func = export_cmd;
 	else if (!ft_strcmp(cmd_name, "unset"))
-		ctx->cmd_status = unset_cmd(ctx, args + 1);
+		builtin_func = unset_cmd;
 	else if (!ft_strcmp(cmd_name, "env"))
-		ctx->cmd_status = env_cmd(ctx);
+		builtin_func = env_cmd;
 	else if (!ft_strcmp(cmd_name, "exit"))
-		ctx->cmd_status = exit_cmd(ctx, args + 1);
+		builtin_func = exit_cmd;
 	else
-	{
-		free(args);
 	 	return (false);
-	}
-	free(args);
+	args = expand_args(ctx, cmd);
+	ctx->cmd_status = builtin_func(ctx, args + 1);
+	free_ptrarr((void **)args, free);
 	return (true);
 }
 
-// PROBLEM: non piped builtins dont use fork() in order to affect
-// current shell (like export and exit). This messes up the redirects
-// by changing the shell's std input and output. FIX THIS
-//
+// Argument expansion is messy right now. Trying to pass
 // pipe_i == -1 means that the pipeline contains only one command
 void	exec_cmd(t_cmd *cmd, t_scontext *ctx, int *pipes, int pipe_i)
 {
-	int		pid;
 	char	**args;
+	char	*cmd_path;
 
-	if (!apply_redirs(ctx, cmd, pipes, pipe_i))
-	{
-		ctx->cmd_status = 1;
+	ctx->cmd_status = apply_redirs(ctx, cmd, pipes, pipe_i);
+	if (ctx->cmd_status)
 		return ;
-	}
-	expand_word(ctx, (char **)&cmd->args->content);
+	cmd->args->content = expand_word(ctx, (char *)cmd->args->content);
+	cmd_path = cmd->args->content;
 	if (pipe_i == -1 && try_exec_builtin(ctx, cmd))
-	{
-		ctx->cmd_status = 0;
 		return ;
-	}
-	pid = fork();
-	if (pid > 0)
-		return ;
+	if (fork() > 0)
+		return (free(cmd->args->content));
 	if (pipe_i == -1 || !try_exec_builtin(ctx, cmd))
-		if (!resolve_cmd(ctx, (char **)&cmd->args->content))
+		if (!resolve_cmd(ctx, &cmd_path))
+		{
+			sctx_destroy(ctx);
 			exit(ERR_CMD);
+		}
 	args = expand_args(ctx, cmd);
-	execve(args[0], args, ctx->envp);
+	execve(cmd_path, args, ctx->envp);
+	perror(MSH_ERR_PFIX);
+	exit(EXIT_FAILURE);
 	// Handle execve failure
 }
 
@@ -269,7 +274,7 @@ int	exec_pipeline(t_scontext *ctx, t_list *cmd_lst, int pipe_n)
 	while (wait(&ctx->cmd_status) > 0)
 		;
 	//if (errno != ECHILD)
-	close_pipes(pipes, pipe_n);
+	//close_pipes(pipes, pipe_n);
 	free(pipes);
 	return (ctx->cmd_status);
 }

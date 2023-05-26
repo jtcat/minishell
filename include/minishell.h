@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:25 by leborges          #+#    #+#             */
-/*   Updated: 2023/05/25 19:39:27 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/05/25 23:49:38 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,9 +71,9 @@ bool	parse_input(t_list *input, t_list **pipe_list);
 void	exec_cmdlist(t_scontext *ctx, t_list *ppline_lst);
 
 // Builtins
-int	pwd_cmd(void);
-int	env_cmd(t_scontext *ctx);
-int	echo_cmd(char *args[]);
+int	pwd_cmd(t_scontext *ctx, char **vars);
+int	env_cmd(t_scontext *ctx, char **vars);
+int	echo_cmd(t_scontext *ctx, char **args);
 int	export_cmd(t_scontext *ctx, char **vars);
 int	unset_cmd(t_scontext *ctx, char **var_ids);
 int	cd_cmd(t_scontext *ctx, char **args);
