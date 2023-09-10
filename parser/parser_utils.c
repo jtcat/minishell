@@ -6,11 +6,12 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/26 15:23:11 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/05/26 15:23:38 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/07 21:41:13 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "grammar.h"
+#include "libft.h"
 
 t_token	*get_token(t_list **cursor)
 {
@@ -59,6 +60,6 @@ void	assign_redirect(t_cmd *cmd, t_token_type red_type, char *filename)
 	}
 	else if (red_type == here_doc)
 	{
-		cmd->hd_delim = filename;
+		ft_lstadd_back(&cmd->hd_delims, ft_lstnew(filename));
 	}
 }

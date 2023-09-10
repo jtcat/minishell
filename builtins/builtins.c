@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/25 14:22:48 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/05/26 00:07:20 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/07 16:52:18 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ int	echo_cmd(t_scontext *ctx, char **args)
 {	
 	int	n_opt;
 
-	n_opt = *args && ft_strcmp(args[0], "-n") == 0;
+	n_opt = *args && (ft_strcmp(args[0], "-n") == 0);
 	if (n_opt)
 		args++;
 	while (*args)
@@ -42,21 +42,23 @@ int	echo_cmd(t_scontext *ctx, char **args)
 
 int	cd_slash_dots(char const *new_dir)
 {
-	return (*new_dir == '/' || !ft_strcmp(new_dir, "..") || !ft_strcmp(new_dir, ".")
+	return (*new_dir == '/' || !ft_strcmp(new_dir, "..")
+		|| !ft_strcmp(new_dir, ".")
 		|| !ft_strncmp(new_dir, "../", 3)
 		|| !ft_strncmp(new_dir, "./", 2));
 }
 
-char *get_var_id(char const *var)
+char	*get_var_id(char const *var)
 {
 	return (ft_substr(var, 0, ft_strchr(var, '=') - var));
 }
 
-char *sctx_getenv(t_scontext *ctx, char *const var_id)
+char	*sctx_getenv(t_scontext *ctx, char *const var_id)
 {
-	char 	**envp = ctx->envp;
+	char	**envp;
 	char	*envp_var_id;
 
+	envp = ctx->envp;
 	while (*envp)
 	{
 		envp_var_id = get_var_id(*envp);

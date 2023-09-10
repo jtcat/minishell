@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:28 by leborges          #+#    #+#             */
-/*   Updated: 2023/05/26 00:09:54 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/07 21:45:12 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,13 +22,13 @@
 #include <unistd.h>
 #include <errno.h>
 
-void del_token(void *token)
+void	del_token(void *token)
 {
 	free(((t_token *)token)->str);
 	free(token);
 }
 
-void do_nothing(void *content)
+void	do_nothing(void *content)
 {
 	(void)content;
 	return ;
@@ -44,8 +44,8 @@ void	del_cmd(void *content)
 		free(cmd->red_in);
 	if (cmd->red_out)
 		free(cmd->red_out);
-	if (cmd->hd_delim)
-		free(cmd->hd_delim);
+	if (cmd->hd_delims)
+		ft_lstclear(&cmd->hd_delims, free);
 	free(cmd);
 }
 

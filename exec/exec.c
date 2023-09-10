@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/13 02:13:40 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/05/26 01:02:16 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/07 23:07:33 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,19 +23,6 @@
 #include <fcntl.h>
 
 #define ERR_CMD 127
-
-void	close_pipes(int	*pipes, int pipe_n)
-{
-	int	*pipe;
-
-	while (pipe_n-- > 0)
-	{
-		pipe = pipes + 2 * pipe_n;
-		close(pipe[0]);
-		close(pipe[1]);
-		pipes++;
-	}
-}
 
 void	str_concat(char **dst_ref, char *src)
 {
@@ -67,7 +54,7 @@ char	*expand_var(t_scontext *ctx, char *cursor, char **expansion)
 }
 
 // Word unquoting and parameter expasion.
-// This is garbage and does not work
+// This is garbage and barely works
 char	*expand_word(t_scontext *ctx, char *word_ref)
 {
 	char	*cursor;
@@ -82,7 +69,7 @@ char	*expand_word(t_scontext *ctx, char *word_ref)
 		if (*cursor == '\'')
 		{
 			str_concat(&expansion, ft_substr(word_start, 0, cursor - word_start));
-			cursor = ft_strchr(cursor, '\''); 
+			cursor = ft_strchr(cursor, '\'');
 			str_concat(&expansion, ft_substr(word_start, 1, cursor - word_start - 1));
 			word_start = cursor + 1;
 		}
@@ -103,8 +90,8 @@ char	*expand_word(t_scontext *ctx, char *word_ref)
 
 int	try_file_redir(t_scontext *ctx, char *fname_ref, int redir_from)
 {
-	char * const	exp_filename = expand_word(ctx, fname_ref);
-	const int redir_to = open(exp_filename, 0, O_RDONLY);
+	char *const	exp_filename = expand_word(ctx, fname_ref);
+	const int	redir_to = open(exp_filename, 0, O_RDONLY);
 
 	free(exp_filename);
 	if (redir_to < 0)
@@ -117,26 +104,25 @@ int	try_file_redir(t_scontext *ctx, char *fname_ref, int redir_from)
 	return (redir_to);
 }
 
-int	apply_redirs(t_scontext *ctx, t_cmd *cmd, int *pipes, int pipe_i)
+int	apply_redirs(t_scontext *ctx, t_cmd *cmd, int write_fd, int read_fd)
 {
-	int * const	ppipe = pipes + 2 * pipe_i;
-
 	if (pipe_i > 0)
-	{
-		dup2(ppipe[0], STDIN_FILENO);
-		close(ppipe[0]);
-	}
-	if (pipe_i >= 0 && pipe_i )
-	{
-		dup2(ppipe[1], STDOUT_FILENO);
-		close(ppipe[1]);
-	}
+		dup2(pipes[1], STDIN_FILENO);
+	else
+		close(pipes[1]);
+	if (pipe_i >= 0 && pipes[0] != -1)
+		dup2(pipes[0], STDOUT_FILENO);
+	else
+		close(pipes[0]);
 	if (cmd->red_in)
-		return (try_file_redir(ctx, cmd->red_in, STDIN_FILENO)
-				< 0);
-	if (cmd->red_out)
-		return (try_file_redir(ctx, cmd->red_out, STDOUT_FILENO)
+		return (try_file_redir(ctx, cmd->red_in, STDIN_FILENO, 0)
 			< 0);
+	if (cmd->red_out)
+		return (try_file_redir(ctx, cmd->red_out, STDOUT_FILENO, cmd->ap_out)
+			< 0);
+//	if (cmd->hd_delims)
+//		return (proc_hd(ctx, cmd->red_out, STDOUT_FILENO, cmd->ap_out)
+//			< 0);
 	return (0);
 }
 
@@ -152,7 +138,7 @@ bool	resolve_cmd(t_scontext *ctx, char **cmd_path_ref)
 	path_dirs = ft_split(sctx_getenv(ctx, "PATH"), ':');
 	if (!path_dirs)
 	{
-		ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX "%s: " MSH_FILE_ERR_MSG "\n", *cmd_path_ref);						
+		ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX "%s: " MSH_FILE_ERR_MSG "\n", *cmd_path_ref);
 		return (false);
 	}
 	path_iter = path_dirs;
@@ -168,7 +154,7 @@ bool	resolve_cmd(t_scontext *ctx, char **cmd_path_ref)
 		}
 		free(tmp_path);
 	}	
-	ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX "%s: " MSH_CMD_NFOUND_ERR "\n", *cmd_path_ref);						
+	ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX "%s: " MSH_CMD_NFOUND_ERR "\n", *cmd_path_ref);
 	free(cmd_suffix);
 	free_ptrarr((void **)path_dirs, free);
 	return (false);
@@ -194,12 +180,15 @@ char	**expand_args(t_scontext *ctx, t_cmd *cmd)
 	return (args);
 }
 
-bool	try_exec_builtin(t_scontext *ctx, t_cmd	*cmd)
+bool	try_exec_builtin(t_scontext *ctx, t_cmd	*cmd, int *pipe_fd, int pipe_i)
 {
-	const char	*cmd_name = (char *)cmd->args->content;
-	char	**args;
-	int		(*builtin_func)(t_scontext *, char **);
+	char *const	cmd_name = (char *)cmd->args->content;
+	char		**args;
+	int			(*builtin_func)(t_scontext *, char **);
 
+	ctx->cmd_status = apply_redirs(ctx, cmd, pipe_fd, pipe_i);
+	if (ctx->cmd_status)
+		return (true);
 	if (!ft_strcmp(cmd_name, "echo"))
 		builtin_func = echo_cmd;
 	else if (!ft_strcmp(cmd_name, "pwd"))
@@ -215,7 +204,7 @@ bool	try_exec_builtin(t_scontext *ctx, t_cmd	*cmd)
 	else if (!ft_strcmp(cmd_name, "exit"))
 		builtin_func = exit_cmd;
 	else
-	 	return (false);
+		return (false);
 	args = expand_args(ctx, cmd);
 	ctx->cmd_status = builtin_func(ctx, args + 1);
 	free_ptrarr((void **)args, free);
@@ -224,58 +213,62 @@ bool	try_exec_builtin(t_scontext *ctx, t_cmd	*cmd)
 
 // Argument expansion is messy right now. Trying to pass
 // pipe_i == -1 means that the pipeline contains only one command
-void	exec_cmd(t_cmd *cmd, t_scontext *ctx, int *pipes, int pipe_i)
+void	exec_cmd(t_cmd *cmd, t_scontext *ctx, int write_fd, int read_fd)
 {
 	char	**args;
 	char	*cmd_path;
 
-	ctx->cmd_status = apply_redirs(ctx, cmd, pipes, pipe_i);
-	if (ctx->cmd_status)
-		return ;
 	cmd->args->content = expand_word(ctx, (char *)cmd->args->content);
 	cmd_path = cmd->args->content;
-	if (pipe_i == -1 && try_exec_builtin(ctx, cmd))
+	if (pipe_i == -1 && try_exec_builtin(ctx, cmd, write_fd, read_fd))
 		return ;
 	if (fork() > 0)
 		return (free(cmd->args->content));
-	if (pipe_i == -1 || !try_exec_builtin(ctx, cmd))
+	ctx->cmd_status = apply_redirs(ctx, cmd, write_fd, read_fd);
+	if (ctx->cmd_status)
+		return ;
+	if (pipe_i == -1 || !try_exec_builtin(ctx, cmd, pipe_fd, pipe_i))
+	{
 		if (!resolve_cmd(ctx, &cmd_path))
 		{
 			sctx_destroy(ctx);
 			exit(ERR_CMD);
 		}
+	}
+	else
+		return ;
 	args = expand_args(ctx, cmd);
 	execve(cmd_path, args, ctx->envp);
 	perror(MSH_ERR_PFIX);
+	free(cmd_path);
+	free_ptrarr((void **)args, free);
+	sctx_destroy(ctx);
 	exit(EXIT_FAILURE);
-	// Handle execve failure
 }
 
 int	exec_pipeline(t_scontext *ctx, t_list *cmd_lst, int pipe_n)
 {
-	int	ifd;
-	int	ofd;
-	int	*pipes;
+	int	pipe_fd[2];
+	int	tmp_fd;
 	int	pipe_i;
 
-	pipes = malloc(sizeof(int) * 2 * pipe_n);
-	pipe_i = -1;
+	pipe_i = (pipe_n == 0) * -1;
+	tmp_fd = -1;
 	while (cmd_lst)
 	{
-		ifd = dup(STDIN_FILENO);
-		ofd = dup(STDOUT_FILENO);
 		if (cmd_lst->next)
-			pipe(pipes + 2 * ++pipe_i);
-		exec_cmd((t_cmd *)(cmd_lst->content), ctx, pipes, pipe_i);
-		dup2(ifd, STDIN_FILENO);
-		dup2(ofd, STDOUT_FILENO);
+			pipe(pipe_fd);
+		else
+		 	pipe_fd[1] = -1;
+		exec_cmd((t_cmd *)(cmd_lst->content), ctx, pipe_fd[1], tmp_fd);
+		tmp_fd = dup(pipe_fd[0]);
+		close(pipe_fd[0]);
+		close(pipe_fd[1]);
 		cmd_lst = cmd_lst->next;
+		pipe_i++;
 	}
 	while (wait(&ctx->cmd_status) > 0)
 		;
-	//if (errno != ECHILD)
-	//close_pipes(pipes, pipe_n);
-	free(pipes);
 	return (ctx->cmd_status);
 }
 
@@ -287,8 +280,8 @@ void	exec_cmdlist(t_scontext *ctx, t_list *ppline_lst)
 	{
 		ppline = ((t_ppline *)(ppline_lst->content));
 		if (ppline->op == lst_no_op
-				|| (ppline->op == lst_and && ctx->cmd_status == 0) 
-				|| (ppline->op == lst_or && ctx->cmd_status > 0))
+			|| (ppline->op == lst_and && ctx->cmd_status == 0)
+			|| (ppline->op == lst_or && ctx->cmd_status > 0))
 			ctx->cmd_status = exec_pipeline(ctx, ppline->cmds, ppline->pipe_n);
 		ppline_lst = ppline_lst->next;
 	}
