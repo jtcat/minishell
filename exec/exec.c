@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/13 02:13:40 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/09/07 23:07:33 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/22 14:54:43 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,10 +88,10 @@ char	*expand_word(t_scontext *ctx, char *word_ref)
 	return (expansion);
 }
 
-int	try_file_redir(t_scontext *ctx, char *fname_ref, int redir_from)
+int	try_file_redir(t_scontext *ctx, char *fname_ref, int redir_from, int ap_out)
 {
 	char *const	exp_filename = expand_word(ctx, fname_ref);
-	const int	redir_to = open(exp_filename, 0, O_RDONLY);
+	const int	redir_to = open(exp_filename, 0, O_RDONLY | (O_APPEND * ap_out));
 
 	free(exp_filename);
 	if (redir_to < 0)
@@ -106,14 +106,16 @@ int	try_file_redir(t_scontext *ctx, char *fname_ref, int redir_from)
 
 int	apply_redirs(t_scontext *ctx, t_cmd *cmd, int write_fd, int read_fd)
 {
-	if (pipe_i > 0)
-		dup2(pipes[1], STDIN_FILENO);
-	else
-		close(pipes[1]);
-	if (pipe_i >= 0 && pipes[0] != -1)
-		dup2(pipes[0], STDOUT_FILENO);
-	else
-		close(pipes[0]);
+	if (read_fd > 0)
+	{
+		dup2(read_fd, STDIN_FILENO);
+		close(read_fd);
+	}
+	if (write_fd > 0)
+	{
+		dup2(write_fd, STDOUT_FILENO);
+		close(write_fd);
+	}
 	if (cmd->red_in)
 		return (try_file_redir(ctx, cmd->red_in, STDIN_FILENO, 0)
 			< 0);
@@ -180,63 +182,71 @@ char	**expand_args(t_scontext *ctx, t_cmd *cmd)
 	return (args);
 }
 
-bool	try_exec_builtin(t_scontext *ctx, t_cmd	*cmd, int *pipe_fd, int pipe_i)
+int (*get_builtinfunc(t_cmd *cmd))(t_scontext *, char **)
 {
 	char *const	cmd_name = (char *)cmd->args->content;
+
+	if (!ft_strcmp(cmd_name, "echo"))
+		return (echo_cmd);
+	else if (!ft_strcmp(cmd_name, "pwd"))
+		return (pwd_cmd);
+	else if (!ft_strcmp(cmd_name, "cd"))
+		return (cd_cmd);
+	else if (!ft_strcmp(cmd_name, "export"))
+		return (export_cmd);
+	else if (!ft_strcmp(cmd_name, "unset"))
+		return (unset_cmd);
+	else if (!ft_strcmp(cmd_name, "env"))
+		return (env_cmd);
+	else if (!ft_strcmp(cmd_name, "exit"))
+		return (exit_cmd);
+	else
+		return (NULL);
+}
+
+bool	exec_builtin(t_scontext *ctx, t_cmd	*cmd, int write_fd, int read_fd)
+{
 	char		**args;
 	int			(*builtin_func)(t_scontext *, char **);
 
-	ctx->cmd_status = apply_redirs(ctx, cmd, pipe_fd, pipe_i);
-	if (ctx->cmd_status)
-		return (true);
-	if (!ft_strcmp(cmd_name, "echo"))
-		builtin_func = echo_cmd;
-	else if (!ft_strcmp(cmd_name, "pwd"))
-		builtin_func = pwd_cmd;
-	else if (!ft_strcmp(cmd_name, "cd"))
-		builtin_func = cd_cmd;
-	else if (!ft_strcmp(cmd_name, "export"))
-		builtin_func = export_cmd;
-	else if (!ft_strcmp(cmd_name, "unset"))
-		builtin_func = unset_cmd;
-	else if (!ft_strcmp(cmd_name, "env"))
-		builtin_func = env_cmd;
-	else if (!ft_strcmp(cmd_name, "exit"))
-		builtin_func = exit_cmd;
-	else
-		return (false);
+	builtin_func = get_builtinfunc(cmd);
 	args = expand_args(ctx, cmd);
 	ctx->cmd_status = builtin_func(ctx, args + 1);
+	if (ctx->cmd_status)
+		return (false);
 	free_ptrarr((void **)args, free);
 	return (true);
 }
 
-// Argument expansion is messy right now. Trying to pass
-// pipe_i == -1 means that the pipeline contains only one command
+// Argument expansion is messy right now.
 void	exec_cmd(t_cmd *cmd, t_scontext *ctx, int write_fd, int read_fd)
 {
 	char	**args;
 	char	*cmd_path;
 
 	cmd->args->content = expand_word(ctx, (char *)cmd->args->content);
-	cmd_path = cmd->args->content;
-	if (pipe_i == -1 && try_exec_builtin(ctx, cmd, write_fd, read_fd))
+	if (write_fd == -1 && read_fd == -1 && get_builtinfunc(cmd))
+	{
+		ctx->cmd_status = apply_redirs(ctx, cmd, write_fd, read_fd);
+		if (!ctx->cmd_status)
+			exec_builtin(ctx, cmd, write_fd, read_fd);
 		return ;
+	}
 	if (fork() > 0)
 		return (free(cmd->args->content));
 	ctx->cmd_status = apply_redirs(ctx, cmd, write_fd, read_fd);
 	if (ctx->cmd_status)
 		return ;
-	if (pipe_i == -1 || !try_exec_builtin(ctx, cmd, pipe_fd, pipe_i))
+	cmd_path = cmd->args->content;
+	if (get_builtinfunc(cmd))
 	{
-		if (!resolve_cmd(ctx, &cmd_path))
-		{
-			sctx_destroy(ctx);
-			exit(ERR_CMD);
-		}
+		exec_builtin(ctx, cmd, write_fd, read_fd);
+		sctx_destroy(ctx);
+		exit(ERR_CMD);
 	}
-	else
-		return ;
+	else if (!resolve_cmd(ctx, &cmd_path))
+	{
+	}
 	args = expand_args(ctx, cmd);
 	execve(cmd_path, args, ctx->envp);
 	perror(MSH_ERR_PFIX);
@@ -250,9 +260,8 @@ int	exec_pipeline(t_scontext *ctx, t_list *cmd_lst, int pipe_n)
 {
 	int	pipe_fd[2];
 	int	tmp_fd;
-	int	pipe_i;
 
-	pipe_i = (pipe_n == 0) * -1;
+	pipe_fd[0] = -1;
 	tmp_fd = -1;
 	while (cmd_lst)
 	{
@@ -265,7 +274,6 @@ int	exec_pipeline(t_scontext *ctx, t_list *cmd_lst, int pipe_n)
 		close(pipe_fd[0]);
 		close(pipe_fd[1]);
 		cmd_lst = cmd_lst->next;
-		pipe_i++;
 	}
 	while (wait(&ctx->cmd_status) > 0)
 		;
