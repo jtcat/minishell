@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/25 14:22:48 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/09/07 16:52:18 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/22 18:41:53 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -137,20 +137,17 @@ int	exit_cmd(t_scontext *ctx, char **args)
 		if (!is_num(*args))
 		{
 			ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX "exit: non numeric argument: %s\n", *args);
-			sctx_destroy(ctx);
-			exit(2);
+			return (1);
 		}
-		if (*(args + 1) != NULL)
+		else if (*(args + 1) != NULL)
 		{
 			ft_putstr_fd(MSH_ERR_PFIX "exit: too many arguments\n", STDERR_FILENO);
 			return (1);
 		}
+		else
+			ctx->cmd_status = ft_atoi(*args);
 	}
-	sctx_destroy(ctx);
-	ft_putstr_fd("exit\n", STDERR_FILENO);
-	if (*args == NULL)
-		exit(ctx->cmd_status);
-	exit(ft_atoi(*args));
+	return (0);
 }
 
 char	*find_var(char const *old_var, char **new_vars)

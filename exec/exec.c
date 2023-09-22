@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/13 02:13:40 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/09/22 14:54:43 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/22 19:40:39 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -204,18 +204,17 @@ int (*get_builtinfunc(t_cmd *cmd))(t_scontext *, char **)
 		return (NULL);
 }
 
-bool	exec_builtin(t_scontext *ctx, t_cmd	*cmd, int write_fd, int read_fd)
+int	exec_builtin(t_scontext *ctx, t_cmd	*cmd, int write_fd, int read_fd)
 {
 	char		**args;
 	int			(*builtin_func)(t_scontext *, char **);
+	int			cmd_ret;
 
 	builtin_func = get_builtinfunc(cmd);
 	args = expand_args(ctx, cmd);
-	ctx->cmd_status = builtin_func(ctx, args + 1);
-	if (ctx->cmd_status)
-		return (false);
+	cmd_ret = builtin_func(ctx, args + 1);
 	free_ptrarr((void **)args, free);
-	return (true);
+	return (cmd_ret);
 }
 
 // Argument expansion is messy right now.
@@ -223,61 +222,67 @@ void	exec_cmd(t_cmd *cmd, t_scontext *ctx, int write_fd, int read_fd)
 {
 	char	**args;
 	char	*cmd_path;
+	int		cmd_ret;
 
+	cmd_ret = 0;
 	cmd->args->content = expand_word(ctx, (char *)cmd->args->content);
 	if (write_fd == -1 && read_fd == -1 && get_builtinfunc(cmd))
 	{
-		ctx->cmd_status = apply_redirs(ctx, cmd, write_fd, read_fd);
-		if (!ctx->cmd_status)
-			exec_builtin(ctx, cmd, write_fd, read_fd);
+		cmd_ret = apply_redirs(ctx, cmd, write_fd, read_fd);
+		if (!cmd_ret)
+			cmd_ret = exec_builtin(ctx, cmd, write_fd, read_fd);
 		return ;
 	}
 	if (fork() > 0)
 		return (free(cmd->args->content));
-	ctx->cmd_status = apply_redirs(ctx, cmd, write_fd, read_fd);
-	if (ctx->cmd_status)
+	cmd_ret = apply_redirs(ctx, cmd, write_fd, read_fd);
+	if (cmd_ret)
 		return ;
 	cmd_path = cmd->args->content;
 	if (get_builtinfunc(cmd))
 	{
-		exec_builtin(ctx, cmd, write_fd, read_fd);
+		cmd_ret = exec_builtin(ctx, cmd, write_fd, read_fd);
 		sctx_destroy(ctx);
-		exit(ERR_CMD);
+		exit(cmd_ret);
 	}
 	else if (!resolve_cmd(ctx, &cmd_path))
 	{
+		cmd_ret = 127;
+		sctx_destroy(ctx);
+		exit(ERR_CMD);
 	}
 	args = expand_args(ctx, cmd);
 	execve(cmd_path, args, ctx->envp);
+	cmd_ret = errno;
 	perror(MSH_ERR_PFIX);
 	free(cmd_path);
 	free_ptrarr((void **)args, free);
-	sctx_destroy(ctx);
-	exit(EXIT_FAILURE);
 }
 
 int	exec_pipeline(t_scontext *ctx, t_list *cmd_lst, int pipe_n)
 {
 	int	pipe_fd[2];
 	int	tmp_fd;
+	int	pipe_ret;
 
 	pipe_fd[0] = -1;
 	tmp_fd = -1;
+	pipe_ret = 0;
 	while (cmd_lst)
 	{
 		if (cmd_lst->next)
 			pipe(pipe_fd);
 		else
 		 	pipe_fd[1] = -1;
-		exec_cmd((t_cmd *)(cmd_lst->content), ctx, pipe_fd[1], tmp_fd);
+		pipe_ret = exec_cmd((t_cmd *)(cmd_lst->content), ctx, pipe_fd[1], tmp_fd);
 		tmp_fd = dup(pipe_fd[0]);
 		close(pipe_fd[0]);
 		close(pipe_fd[1]);
 		cmd_lst = cmd_lst->next;
 	}
-	while (wait(&ctx->cmd_status) > 0)
+	while (wait(&pipe_ret) > 0)
 		;
-	return (ctx->cmd_status);
+	return (pipe_ret);
 }
 
 void	exec_cmdlist(t_scontext *ctx, t_list *ppline_lst)
@@ -290,7 +295,12 @@ void	exec_cmdlist(t_scontext *ctx, t_list *ppline_lst)
 		if (ppline->op == lst_no_op
 			|| (ppline->op == lst_and && ctx->cmd_status == 0)
 			|| (ppline->op == lst_or && ctx->cmd_status > 0))
+		{
 			ctx->cmd_status = exec_pipeline(ctx, ppline->cmds, ppline->pipe_n);
+			if (!ft_strcmp("exit", (char *)(((t_cmd *)(ppline->cmds->content))->args->content))
+					&& !((t_cmd *)(ppline->cmds->content))->args->next)
+				break ;
+		}
 		ppline_lst = ppline_lst->next;
 	}
 }

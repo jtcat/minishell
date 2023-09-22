@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:28 by leborges          #+#    #+#             */
-/*   Updated: 2023/09/07 21:45:12 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/22 16:08:35 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,6 +115,7 @@ int	main(int argc, char *argv[], char const *envp[])
 			ctx.input = readline(MSH_CMD_PROMPT);
 		}
 		sctx_destroy(&ctx);
+		ft_putstr_fd("exit\n", STDOUT_FILENO);
 //		env_cmd(&ctx);
 //		pwd_cmd();
 //		echo_cmd((char *[]){"ATMD4\n", NULL}, 0);
