@@ -28,8 +28,10 @@ $(NAME): $(LFT) $(OBJS)
 %.o: %.c
 	$(CC) $(CFLAGS) -I$(INC_DIR) -c $< -o $@
 
-$(LFT):
+lft:
 	$(MAKE) bonus -C $(LFT_DIR)
+
+$(LFT): lft
 
 clean:
 	$(MAKE) clean -C $(LFT_DIR)
