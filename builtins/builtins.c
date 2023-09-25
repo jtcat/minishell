@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/25 14:22:48 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/09/25 01:16:44 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/25 12:16:14 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -150,12 +150,12 @@ int	exit_cmd(t_scontext *ctx, char **args)
 			ctx->cmd_status = 1;
 		}
 		else
-			ctx->cmd_status = exit_code;
+			ctx->cmd_status = (int)exit_code;
 	}
 	ft_putstr_fd("exit\n", STDOUT_FILENO);
 	sctx_destroy(ctx);
 	exit(ctx->cmd_status);
-	return (0);
+	return (ctx->cmd_status);
 }
 
 char	*find_var(char const *old_var, char **new_vars)
