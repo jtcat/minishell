@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/25 14:22:48 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/09/22 18:41:53 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/25 01:16:44 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@
 int	echo_cmd(t_scontext *ctx, char **args)
 {	
 	int	n_opt;
+	(void)ctx;
 
 	n_opt = *args && (ft_strcmp(args[0], "-n") == 0);
 	if (n_opt)
@@ -132,21 +133,28 @@ int	env_cmd(t_scontext *ctx, char **args)
 
 int	exit_cmd(t_scontext *ctx, char **args)
 {
+	unsigned char	exit_code;
+	int				is_num;
+
 	if (*args)
 	{
-		if (!is_num(*args))
+		exit_code = ft_atoi(*args, &is_num);
+		if (!is_num)
 		{
 			ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX "exit: non numeric argument: %s\n", *args);
-			return (1);
+			ctx->cmd_status = 2;
 		}
 		else if (*(args + 1) != NULL)
 		{
 			ft_putstr_fd(MSH_ERR_PFIX "exit: too many arguments\n", STDERR_FILENO);
-			return (1);
+			ctx->cmd_status = 1;
 		}
 		else
-			ctx->cmd_status = ft_atoi(*args);
+			ctx->cmd_status = exit_code;
 	}
+	ft_putstr_fd("exit\n", STDOUT_FILENO);
+	sctx_destroy(ctx);
+	exit(ctx->cmd_status);
 	return (0);
 }
 

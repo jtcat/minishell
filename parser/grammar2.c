@@ -6,11 +6,12 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/26 15:18:33 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/05/26 15:24:48 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/24 23:28:27 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "grammar.h"
+#include <stdio.h>
 
 bool	parse_redirect(t_list **cursor, t_cmd *cmd, bool *err_flag)
 {

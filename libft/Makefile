@@ -20,7 +20,7 @@ OBJS	= ${SRCS:.c=.o}
 
 BOBJS	= ${BSRCS:.c=.o}
 
-FLAGS	= -Wall -Wextra -Werror
+FLAGS	= -g -Wall -Wextra -Werror
 
 RM		= rm -f
 

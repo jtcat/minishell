@@ -6,7 +6,7 @@
 /*   By: joaoteix <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/02 18:46:50 by joaoteix          #+#    #+#             */
-/*   Updated: 2022/11/04 21:23:29 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/25 01:13:55 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 static int	ft_isspace(char c)
@@ -24,7 +24,7 @@ static int	ft_is_sign(char c)
 	return (c == '+' || c == '-');
 }
 
-int	ft_atoi(char *str)
+int	ft_atoi(char *str, int *isval)
 {
 	int	numb;
 	int	sign;
@@ -44,5 +44,7 @@ int	ft_atoi(char *str)
 		numb += (int)(*str - '0');
 		str++;
 	}
+	if (isval)
+		*isval = !*str;
 	return (sign * numb);
 }

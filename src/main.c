@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:28 by leborges          #+#    #+#             */
-/*   Updated: 2023/09/22 16:08:35 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/24 23:52:29 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,8 @@ void	del_pipe(void *content)
 
 void	sctx_destroy(t_scontext *ctx)
 {
-	free(ctx->input);
+	if (ctx->input)
+		free(ctx->input);
 	free_ptrarr((void **)ctx->envp, free);
 	ft_lstclear(&ctx->tokens, del_token);
 	ft_lstclear(&ctx->cmd_list, del_pipe);
@@ -88,6 +89,7 @@ int	main(int argc, char *argv[], char const *envp[])
 
 	//ctx.envp = envp;
 	(void)argv;
+	ctx.input = NULL;
 	ctx.cmd_list = NULL;
 	ctx.tokens = NULL;
 	ctx.envp = dup_envp(envp);
@@ -115,7 +117,6 @@ int	main(int argc, char *argv[], char const *envp[])
 			ctx.input = readline(MSH_CMD_PROMPT);
 		}
 		sctx_destroy(&ctx);
-		ft_putstr_fd("exit\n", STDOUT_FILENO);
 //		env_cmd(&ctx);
 //		pwd_cmd();
 //		echo_cmd((char *[]){"ATMD4\n", NULL}, 0);

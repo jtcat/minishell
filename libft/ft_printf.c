@@ -6,7 +6,7 @@
 /*   By: joaoteix <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/11 18:54:08 by joaoteix          #+#    #+#             */
-/*   Updated: 2022/12/29 07:06:01 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/25 01:15:12 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,14 +37,14 @@ static char	*ft_parseform(const char *form, t_formspec *specs)
 		specs->flags[(int)*(iter++)] = 1;
 	specs->flags[' '] *= !specs->flags['+'];
 	specs->flags['0'] *= !specs->flags['-'];
-	specs->field_w = (size_t)ft_atoi(iter);
+	specs->field_w = (size_t)ft_atoi(iter, NULL);
 	while (*iter && ft_isdigit(*iter))
 		(iter)++;
 	if (*iter && *iter == '.')
 	{
 		specs->flags['.'] = 1;
 		specs->flags['0'] = 0;
-		specs->precision = ft_atoi(++iter);
+		specs->precision = ft_atoi(++iter, NULL);
 	}
 	while (*iter && ft_isdigit(*iter))
 		iter++;

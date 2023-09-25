@@ -6,7 +6,7 @@
 /*   By: joaoteix <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/06 15:51:56 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/05/12 21:57:05 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/25 00:12:22 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@ char	*ft_strrchr(const char *s, int c);
 char	*ft_strjoin(const char *s1, const char *s2);
 char	*ft_strdup(const char *s);
 char	*ft_strmapi(const char *s, char (*f)(unsigned int, char));
-int		ft_atoi(const char *s);
+int		ft_atoi(const char *s, int *isval);
 char	*ft_itoa(int n);
 char	**ft_split(const char *s, char c);
 char	*ft_substr(char const *s, unsigned int start, size_t len);

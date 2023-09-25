@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/13 02:13:40 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/09/22 19:40:39 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/25 01:25:17 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,12 @@ char	*expand_var(t_scontext *ctx, char *cursor, char **expansion)
 	char		**env_i;
 	int			id_len;
 
+	printf("cursor: %c\n", *cursor);
+	if (*cursor == '?')
+	{
+		*expansion = ft_itoa(ctx->cmd_status);
+		return (cursor + 1);
+	}
 	while (ft_isalnum(*cursor) || *cursor == '_')
 		(cursor)++;
 	if (cursor == start)
@@ -78,10 +84,10 @@ char	*expand_word(t_scontext *ctx, char *word_ref)
 			str_concat(&expansion, ft_substr(word_start, 0, cursor - word_start));
 			while (*cursor != '"')
 				if (*cursor == '$')
-					word_start = expand_var(ctx, cursor, &expansion);
+					word_start = expand_var(ctx, cursor + 1, &expansion);
 		}
 		else if (*cursor == '$')
-			word_start = expand_var(ctx, cursor, &expansion);
+			word_start = expand_var(ctx, cursor + 1, &expansion);
 		cursor++;
 	}
 	str_concat(&expansion, ft_substr(word_start, 0, cursor - word_start));
@@ -104,17 +110,17 @@ int	try_file_redir(t_scontext *ctx, char *fname_ref, int redir_from, int ap_out)
 	return (redir_to);
 }
 
-int	apply_redirs(t_scontext *ctx, t_cmd *cmd, int write_fd, int read_fd)
+int	apply_redirs(t_scontext *ctx, t_cmd *cmd, int iofd[2])
 {
-	if (read_fd > 0)
+	if (iofd[1] > 0)
 	{
-		dup2(read_fd, STDIN_FILENO);
-		close(read_fd);
+		dup2(iofd[1], STDIN_FILENO);
+		close(iofd[1]);
 	}
-	if (write_fd > 0)
+	if (iofd[0] > 0)
 	{
-		dup2(write_fd, STDOUT_FILENO);
-		close(write_fd);
+		dup2(iofd[0], STDOUT_FILENO);
+		close(iofd[0]);
 	}
 	if (cmd->red_in)
 		return (try_file_redir(ctx, cmd->red_in, STDIN_FILENO, 0)
@@ -204,7 +210,7 @@ int (*get_builtinfunc(t_cmd *cmd))(t_scontext *, char **)
 		return (NULL);
 }
 
-int	exec_builtin(t_scontext *ctx, t_cmd	*cmd, int write_fd, int read_fd)
+int	exec_builtin(t_scontext *ctx, t_cmd	*cmd)
 {
 	char		**args;
 	int			(*builtin_func)(t_scontext *, char **);
@@ -218,48 +224,50 @@ int	exec_builtin(t_scontext *ctx, t_cmd	*cmd, int write_fd, int read_fd)
 }
 
 // Argument expansion is messy right now.
-void	exec_cmd(t_cmd *cmd, t_scontext *ctx, int write_fd, int read_fd)
+void	exec_cmd(t_cmd *cmd, t_scontext *ctx, int iofd[2], int *retval)
 {
 	char	**args;
 	char	*cmd_path;
-	int		cmd_ret;
 
-	cmd_ret = 0;
+	*retval = 0;
 	cmd->args->content = expand_word(ctx, (char *)cmd->args->content);
-	if (write_fd == -1 && read_fd == -1 && get_builtinfunc(cmd))
+	// handle empty commands with IO redirects
+	if (!cmd->args->content)
+	{}
+	if (iofd[0] == -1 && iofd[1] == -1 && get_builtinfunc(cmd))
 	{
-		cmd_ret = apply_redirs(ctx, cmd, write_fd, read_fd);
-		if (!cmd_ret)
-			cmd_ret = exec_builtin(ctx, cmd, write_fd, read_fd);
+		*retval = apply_redirs(ctx, cmd, iofd);
+		if (!*retval)
+			*retval = exec_builtin(ctx, cmd);
 		return ;
 	}
 	if (fork() > 0)
 		return (free(cmd->args->content));
-	cmd_ret = apply_redirs(ctx, cmd, write_fd, read_fd);
-	if (cmd_ret)
+	*retval = apply_redirs(ctx, cmd, iofd);
+	if (*retval)
 		return ;
 	cmd_path = cmd->args->content;
 	if (get_builtinfunc(cmd))
 	{
-		cmd_ret = exec_builtin(ctx, cmd, write_fd, read_fd);
+		*retval = exec_builtin(ctx, cmd);
 		sctx_destroy(ctx);
-		exit(cmd_ret);
+		exit(*retval);
 	}
 	else if (!resolve_cmd(ctx, &cmd_path))
 	{
-		cmd_ret = 127;
+		*retval = 127;
 		sctx_destroy(ctx);
 		exit(ERR_CMD);
 	}
 	args = expand_args(ctx, cmd);
 	execve(cmd_path, args, ctx->envp);
-	cmd_ret = errno;
+	*retval = errno;
 	perror(MSH_ERR_PFIX);
 	free(cmd_path);
 	free_ptrarr((void **)args, free);
 }
 
-int	exec_pipeline(t_scontext *ctx, t_list *cmd_lst, int pipe_n)
+int	exec_pipeline(t_scontext *ctx, t_list *cmd_lst)
 {
 	int	pipe_fd[2];
 	int	tmp_fd;
@@ -274,7 +282,7 @@ int	exec_pipeline(t_scontext *ctx, t_list *cmd_lst, int pipe_n)
 			pipe(pipe_fd);
 		else
 		 	pipe_fd[1] = -1;
-		pipe_ret = exec_cmd((t_cmd *)(cmd_lst->content), ctx, pipe_fd[1], tmp_fd);
+		exec_cmd((t_cmd *)(cmd_lst->content), ctx, (int[2]){pipe_fd[1], tmp_fd}, &pipe_ret);
 		tmp_fd = dup(pipe_fd[0]);
 		close(pipe_fd[0]);
 		close(pipe_fd[1]);
@@ -295,12 +303,7 @@ void	exec_cmdlist(t_scontext *ctx, t_list *ppline_lst)
 		if (ppline->op == lst_no_op
 			|| (ppline->op == lst_and && ctx->cmd_status == 0)
 			|| (ppline->op == lst_or && ctx->cmd_status > 0))
-		{
-			ctx->cmd_status = exec_pipeline(ctx, ppline->cmds, ppline->pipe_n);
-			if (!ft_strcmp("exit", (char *)(((t_cmd *)(ppline->cmds->content))->args->content))
-					&& !((t_cmd *)(ppline->cmds->content))->args->next)
-				break ;
-		}
+			ctx->cmd_status = exec_pipeline(ctx, ppline->cmds);
 		ppline_lst = ppline_lst->next;
 	}
 }

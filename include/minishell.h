@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:25 by leborges          #+#    #+#             */
-/*   Updated: 2023/09/07 21:39:30 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/24 23:56:28 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,12 +34,12 @@ typedef struct s_token
 
 typedef struct s_scontext
 {
-	char	**envp;
-	char	*input;
-	size_t	envp_len;
-	t_list	*cmd_list;
-	t_list	*tokens;
-	int		cmd_status;
+	char			**envp;
+	char			*input;
+	size_t			envp_len;
+	t_list			*cmd_list;
+	t_list			*tokens;
+	unsigned char	cmd_status;
 }	t_scontext;
 
 typedef struct s_cmd
