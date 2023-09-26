@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/13 02:13:40 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/09/26 02:28:47 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/26 11:29:32 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -300,7 +300,7 @@ int	exec_cmd(t_cmd *cmd, t_shctx *ctx, int iofd[2], int *exitval)
 	int		pid;
 
 	pid = 0;
-	if (iofd[0] != -1 || iofd[1] != -1 || !get_builtinfunc(cmd))
+	if (iofd[0] > -1 || iofd[1] > -1 || !get_builtinfunc(cmd))
 		pid = fork();
 	if (pid > 0)
 		return (pid);
@@ -351,9 +351,9 @@ int	exec_pipeline(t_shctx *ctx, t_list *cmd_lst)
 		cmd_lst = cmd_lst->next;
 		if (!cmd_lst)
 			break ;
+		close(pipe_fd[1]);
 		tmp_fd = dup(pipe_fd[0]);
 		close(pipe_fd[0]);
-		close(pipe_fd[1]);
 	}
 	waitpid(last_pid, &pipe_stat, 0);
 	if (last_pid == 0)
