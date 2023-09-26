@@ -1,6 +1,6 @@
 CC:= cc
 
-CFLAGS:= -O0 -g -Wall -Wextra
+CFLAGS:= -g -Wall -Wextra # -Werror
 
 LIB_FLAGS:= -lreadline
 
