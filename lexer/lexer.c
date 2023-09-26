@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:29:48 by leborges          #+#    #+#             */
-/*   Updated: 2023/09/26 02:05:17 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/26 03:46:58 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ void	store_token(t_list **token_list, char *start, char *end,
 	token = malloc(sizeof(t_token));
 	if (type == newline)
 		token->str = ft_strdup("newline");
-	else if (!is_op(*start))
+	else
 		token->str = ft_substr(start, 0, end - start + 1);
 	token->type = type;
 	ft_lstadd_back(token_list, ft_lstnew(token));
