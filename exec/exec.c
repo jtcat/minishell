@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/13 02:13:40 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/09/26 11:29:32 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/26 11:49:41 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -281,11 +281,9 @@ int	resolve_redirs(t_shctx *ctx, t_cmd *cmd, int pipefd[2])
 int	stop_cmd(t_shctx *ctx, int pid, int *exitval)
 {
 	if (pid > 0)
-	{
-		sctx_destroy(ctx);
-		exit(*exitval);
-	}
-	return (pid);
+		return (pid);
+	sctx_destroy(ctx);
+	exit(*exitval);
 }
 
 // Argument expansion is messy right now.
