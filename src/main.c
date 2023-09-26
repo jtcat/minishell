@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:28 by leborges          #+#    #+#             */
-/*   Updated: 2023/09/24 23:52:29 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/25 21:22:42 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,10 +17,10 @@
 #include <stdio.h>
 #include <readline/readline.h>
 #include <readline/history.h>
-#include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include <signal.h>
 
 void	del_token(void *token)
 {
@@ -40,12 +40,8 @@ void	del_cmd(void *content)
 
 	cmd = (t_cmd *)content;
 	ft_lstclear(&cmd->args, do_nothing);
-	if (cmd->red_in)
-		free(cmd->red_in);
-	if (cmd->red_out)
-		free(cmd->red_out);
-	if (cmd->hd_delims)
-		ft_lstclear(&cmd->hd_delims, free);
+	if (cmd->redirs)
+		ft_lstclear(&cmd->redirs, do_nothing);
 	free(cmd);
 }
 
@@ -58,7 +54,7 @@ void	del_pipe(void *content)
 	free(pipeline);
 }
 
-void	sctx_destroy(t_scontext *ctx)
+void	sctx_destroy(t_shctx *ctx)
 {
 	if (ctx->input)
 		free(ctx->input);
@@ -85,7 +81,7 @@ char	**dup_envp(char const *envp[])
 
 int	main(int argc, char *argv[], char const *envp[])
 {
-	t_scontext	ctx;
+	t_shctx	ctx;
 
 	//ctx.envp = envp;
 	(void)argv;

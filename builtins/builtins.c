@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/25 14:22:48 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/09/25 12:16:14 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/26 01:31:39 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@
 // Builtin utilities
 // Return values represent exit status
 
-int	echo_cmd(t_scontext *ctx, char **args)
+int	echo_cmd(t_shctx *ctx, char **args)
 {	
 	int	n_opt;
 	(void)ctx;
@@ -54,7 +54,7 @@ char	*get_var_id(char const *var)
 	return (ft_substr(var, 0, ft_strchr(var, '=') - var));
 }
 
-char	*sctx_getenv(t_scontext *ctx, char *const var_id)
+char	*sctx_getenv(t_shctx *ctx, char *const var_id)
 {
 	char	**envp;
 	char	*envp_var_id;
@@ -74,7 +74,7 @@ char	*sctx_getenv(t_scontext *ctx, char *const var_id)
 	return (NULL);
 }
 
-int	cd(t_scontext *ctx, char *new_dir)
+int	cd(t_shctx *ctx, char *new_dir)
 {
 	char	*temp_path;
 	char	*curpath;
@@ -104,7 +104,7 @@ int	cd(t_scontext *ctx, char *new_dir)
 	return (0);
 }
 
-int	cd_cmd(t_scontext *ctx, char **args)
+int	cd_cmd(t_shctx *ctx, char **args)
 {
 	if (*(args + 1) == NULL)
 		return (cd(ctx, *args));
@@ -112,7 +112,7 @@ int	cd_cmd(t_scontext *ctx, char **args)
 	return (ERRC_CD_ARGS);
 }
 
-int	pwd_cmd(t_scontext *ctx, char **args)
+int	pwd_cmd(t_shctx *ctx, char **args)
 {
 	char	*cwd;
 
@@ -122,7 +122,7 @@ int	pwd_cmd(t_scontext *ctx, char **args)
 	return (0);
 }
 
-int	env_cmd(t_scontext *ctx, char **args)
+int	env_cmd(t_shctx *ctx, char **args)
 {
 	char *const	*iter = ctx->envp;
 
@@ -131,7 +131,7 @@ int	env_cmd(t_scontext *ctx, char **args)
 	return (0);
 }
 
-int	exit_cmd(t_scontext *ctx, char **args)
+int	exit_cmd(t_shctx *ctx, char **args)
 {
 	unsigned char	exit_code;
 	int				is_num;
@@ -193,7 +193,7 @@ void	add_vars(char *envp[], char *new_envp[], char **new_vars)
 }
 
 // Need to validate ID: failing an assigment does not prevent others
-int	export_vars(t_scontext *ctx, char **vars)
+int	export_vars(t_shctx *ctx, char **vars)
 {
 	char	**vars_iter;
 	char 	*var_id;
@@ -228,7 +228,7 @@ void	remove_vars(char **envp, char **new_envp, char **var_ids)
 	}
 }
 
-int	unset_cmd(t_scontext *ctx, char **var_ids)
+int	unset_cmd(t_shctx *ctx, char **var_ids)
 {
 	char 	**new_envp;
 	int		old_ids;
@@ -250,7 +250,7 @@ int	unset_cmd(t_scontext *ctx, char **var_ids)
 	return (0);
 }
 
-int	export_cmd(t_scontext *ctx, char **var_ids)
+int	export_cmd(t_shctx *ctx, char **var_ids)
 {
 	if (!var_ids)
 		return (env_cmd(ctx, var_ids));

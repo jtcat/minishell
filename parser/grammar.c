@@ -6,11 +6,12 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/26 15:16:27 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/05/26 15:20:17 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/26 01:10:42 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "grammar.h"
+#include "minishell.h"
 
 bool	parse_pipeline_suffix(t_list **curs, t_ppline **pipeline,
 		bool *err_flag)
@@ -64,7 +65,7 @@ bool	parse_input(t_list *input, t_list **pipe_list)
 
 	err_flag = false;
 	parse_list(&input, pipe_list, &err_flag);
-	if (!test_cursor(&input, eof))
+	if (!test_cursor(&input, newline))
 		return (synt_err("parse_tokens", &input, &err_flag));
 	return (!err_flag);
 }

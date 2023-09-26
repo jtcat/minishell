@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 23:33:09 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/05/22 16:40:04 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/26 01:01:31 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ int	is_blank(char c)
 
 int	is_op(char c)
 {
-	return (c == '&' || c == '>' || c == '<' || c == '|');
+	return (c == '\n' || c == '&' || c == '>' || c == '<' || c == '|');
 }
 
 int	is_wordchar(char c)

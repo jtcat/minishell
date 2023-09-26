@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:25 by leborges          #+#    #+#             */
-/*   Updated: 2023/09/24 23:56:28 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/26 01:09:50 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,21 +18,27 @@
 # include <libft.h>
 
 # define MSH_CMD_PROMPT "minishell > "
+# define HD_PROMPT "> "
 # define MSH_FILE_ERR_MSG "No such file or directory"
 # define MSH_ERR_PFIX "minishell: "
 # define MSH_CMD_NFOUND_ERR "command not found"
+# define MSH_CMD_NPERM_ERR "Permission denied"
+
+# define ACCESS_BITS 420
+# define FILE_APPEND 1089
+# define FILE_TRUNC	577
 
 enum e_token_type {none, word, name, pipe_op, red_in, red_out, \
-	red_out_ap, here_doc, lst_and, lst_or, lst_no_op, eof};
+	red_out_ap, here_doc, lst_and, lst_or, lst_no_op, newline};
 typedef enum e_token_type	t_token_type;
 
 typedef struct s_token
 {
 	char			*str;
 	t_token_type	type;
-}			t_token;
+}	t_token;
 
-typedef struct s_scontext
+typedef struct s_shctx
 {
 	char			**envp;
 	char			*input;
@@ -40,16 +46,14 @@ typedef struct s_scontext
 	t_list			*cmd_list;
 	t_list			*tokens;
 	unsigned char	cmd_status;
-}	t_scontext;
+}	t_shctx;
 
 typedef struct s_cmd
 {
 	t_list	*args;
+	t_list	*redirs;
+	int		hd_fd;
 	int		arg_n;
-	char	*red_in;
-	char	*red_out;
-	t_list	*hd_delims;
-	bool	ap_out;
 }	t_cmd;
 
 typedef struct s_ppline
@@ -69,14 +73,14 @@ t_list	*split_tokens(char *str);
 bool	parse_input(t_list *input, t_list **pipe_list);
 
 // Executer entry point
-void	exec_cmdlist(t_scontext *ctx, t_list *ppline_lst);
+void	exec_cmdlist(t_shctx *ctx, t_list *ppline_lst);
 
 // Builtins
-int		pwd_cmd(t_scontext *ctx, char **vars);
-int		env_cmd(t_scontext *ctx, char **vars);
-int		echo_cmd(t_scontext *ctx, char **args);
-int		export_cmd(t_scontext *ctx, char **vars);
-int		unset_cmd(t_scontext *ctx, char **var_ids);
-int		cd_cmd(t_scontext *ctx, char **args);
-int		exit_cmd(t_scontext *ctx, char **args);
+int		pwd_cmd(t_shctx *ctx, char **vars);
+int		env_cmd(t_shctx *ctx, char **vars);
+int		echo_cmd(t_shctx *ctx, char **args);
+int		export_cmd(t_shctx *ctx, char **vars);
+int		unset_cmd(t_shctx *ctx, char **var_ids);
+int		cd_cmd(t_shctx *ctx, char **args);
+int		exit_cmd(t_shctx *ctx, char **args);
 #endif

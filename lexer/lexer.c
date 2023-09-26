@@ -6,12 +6,13 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:29:48 by leborges          #+#    #+#             */
-/*   Updated: 2023/05/26 15:12:12 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/26 02:05:17 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 #include "utils.h"
+#include <stdio.h>
 #include <unistd.h>
 #include <minishell.h>
 
@@ -21,9 +22,9 @@ void	store_token(t_list **token_list, char *start, char *end,
 	t_token	*token;
 
 	token = malloc(sizeof(t_token));
-	if (type == eof)
-		token->str = ft_strdup("");
-	else
+	if (type == newline)
+		token->str = ft_strdup("newline");
+	else if (!is_op(*start))
 		token->str = ft_substr(start, 0, end - start + 1);
 	token->type = type;
 	ft_lstadd_back(token_list, ft_lstnew(token));
@@ -95,6 +96,6 @@ t_list	*split_tokens(char *str)
 	token_list = NULL;
 	while (lex_op(&token_list, &str) || lex_word(&token_list, &str))
 		skip(&str);
-	store_token(&token_list, NULL, NULL, eof);
+	store_token(&token_list, NULL, NULL, newline);
 	return (token_list);
 }

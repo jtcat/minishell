@@ -6,12 +6,16 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/26 15:23:11 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/09/07 21:41:13 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/26 01:11:08 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "grammar.h"
 #include "libft.h"
+#include "minishell.h"
+#include <stdio.h>
+#include <readline/readline.h>
+#include <readline/history.h>
 
 t_token	*get_token(t_list **cursor)
 {
@@ -35,31 +39,36 @@ bool	synt_err(char errctx[], t_list **cursor, bool	*parser_err_flag)
 	(void)errctx;
 	if (*parser_err_flag)
 		return (false);
-	if (token->type == eof)
-		ft_putstr_fd(MSH_ERR_PFIX "unexpected end of input\n", STDERR_FILENO);
-	else
-		ft_dprintf(STDERR_FILENO,
-			MSH_ERR_PFIX "error near unexpected token `%s'\n", token->str);
+	ft_dprintf(STDERR_FILENO,
+		MSH_ERR_PFIX "error near unexpected token `%s'\n", token->str);
 	*parser_err_flag = true;
 	return (false);
 }
 
-void	assign_redirect(t_cmd *cmd, t_token_type red_type, char *filename)
+// Returns read fd to buffer containing here_doc input
+// Should be closed when used
+void	read_hd(t_cmd *cmd, t_token *delimtok)
 {
-	if (red_type == red_in)
-		cmd->red_in = filename;
-	else if (red_type == red_out)
+	const char	*delim = delimtok->str;
+	char		*line;
+	int			pipefd[2];
+
+	if (cmd->hd_fd > -1)
+		close(cmd->hd_fd);
+	pipe(pipefd);
+	line = readline(HD_PROMPT);
+	while (line)
 	{
-		cmd->red_out = filename;
-		cmd->ap_out = false;
+		if (ft_strncmp(line, delim, ft_strlen(delim)) == 0 && line[ft_strlen(delim)] == '\n')
+		{
+			free(line);
+			break ;
+		}
+		ft_putstr_fd(line, pipefd[1]);
+		free(line);
+		line = readline(HD_PROMPT);
 	}
-	else if (red_type == red_out_ap)
-	{
-		cmd->red_out = filename;
-		cmd->ap_out = true;
-	}
-	else if (red_type == here_doc)
-	{
-		ft_lstadd_back(&cmd->hd_delims, ft_lstnew(filename));
-	}
+	close(pipefd[1]);
+	cmd->hd_fd = pipefd[0];
+	ft_lstadd_back(&cmd->redirs, ft_lstnew(delimtok));
 }
