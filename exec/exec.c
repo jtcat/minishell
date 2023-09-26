@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/13 02:13:40 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/09/26 17:38:16 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/26 21:31:55 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -213,10 +213,10 @@ int	exec_builtin(t_shctx *ctx, t_cmd *cmd)
 	return (cmd_ret);
 }
 
-int	file_redir(t_shctx *ctx, char *fname_ref, int red_type)
+int	file_redir(t_shctx *ctx, char **fname_ref, int red_type)
 {
 	int	redir_to; 
-	char *const	exp_filename = expand_word(ctx, &fname_ref);
+	char *const	exp_filename = expand_word(ctx, fname_ref);
 
 	if (!ft_strcmp(exp_filename, ""))
 	{
@@ -230,15 +230,13 @@ int	file_redir(t_shctx *ctx, char *fname_ref, int red_type)
 		  ACCESS_BITS);
 	if (redir_to < 0)
 	{
-		perror(MSH_ERR_PFIX);
-		free(exp_filename);
+		ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX "%s: %s\n", exp_filename, strerror(errno));
 		return (-1);
 	}
 	dup2(redir_to, (red_type == red_in) * STDIN_FILENO
 		+ (red_type == red_out || red_type == red_out_ap)
 		* STDOUT_FILENO);
 	close(redir_to);
-	free(exp_filename);
 	return (redir_to);
 }
 
@@ -277,7 +275,7 @@ int	resolve_redirs(t_shctx *ctx, t_cmd *cmd, int pipefd[2], int piperfd)
 			|| redir_tok->type == red_out_ap
 			|| redir_tok->type == red_in)
 		{
-			redir_stat = file_redir(ctx, redir_tok->str, redir_tok->type);
+			redir_stat = file_redir(ctx, &redir_tok->str, redir_tok->type);
 			if (redir_stat < 0)
 				return (redir_stat);
 		}
@@ -299,8 +297,7 @@ int	stop_cmd(t_shctx *ctx, int pid, int *exitval)
 // exitval is only used as external var by builtins running in the main process
 //
 // I don't think execve should fail.
-// If it does, I don't know what the expected bash-like
-// behaviour is
+// If it does, I don't know what the expected bash-like behaviour is
 //
 // First arg expansion will fail if it's NULL (like in '< file.txt' for example)
 int	exec_cmd(t_cmd *cmd, t_shctx *ctx, int iofd[2], int piperfd, int *exitval)
