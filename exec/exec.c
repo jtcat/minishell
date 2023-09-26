@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/13 02:13:40 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/09/26 21:31:55 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/26 23:06:54 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -205,10 +205,20 @@ int	exec_builtin(t_shctx *ctx, t_cmd *cmd)
 	char		**args;
 	int			(*builtin_func)(t_shctx *, char **);
 	int			cmd_ret;
+	int			std_fds[2];
 
 	builtin_func = get_builtinfunc(cmd);
 	expand_args(ctx, cmd, &args);
+	if (ft_strcmp(*(char **)cmd->args->content, "exit"))
+	{
+		std_fds[1] = dup(STDOUT_FILENO);
+		std_fds[0] = dup(STDIN_FILENO);
+	}
 	cmd_ret = builtin_func(ctx, args + 1);
+	dup2(std_fds[1], STDOUT_FILENO);
+	close(std_fds[1]);
+	dup2(std_fds[0], STDOUT_FILENO);
+	close(std_fds[0]);
 	free(args);
 	return (cmd_ret);
 }
@@ -286,7 +296,7 @@ int	resolve_redirs(t_shctx *ctx, t_cmd *cmd, int pipefd[2], int piperfd)
 
 int	stop_cmd(t_shctx *ctx, int pid, int *exitval)
 {
-	if (pid > 0)
+	if (pid == -1)
 		return (pid);
 	sctx_destroy(ctx);
 	exit(*exitval);
@@ -305,7 +315,7 @@ int	exec_cmd(t_cmd *cmd, t_shctx *ctx, int iofd[2], int piperfd, int *exitval)
 	char	**args;
 	int		pid;
 
-	pid = 0;
+	pid = -1;
 	expand_word(ctx, (char **)cmd->args->content);
 	if (iofd[0] > -1 || iofd[1] > -1 || !get_builtinfunc(cmd))
 		pid = fork();
@@ -363,7 +373,7 @@ int	exec_pipeline(t_shctx *ctx, t_list *cmd_lst)
 		close(pipe_fd[0]);
 	}
 	waitpid(last_pid, &pipe_stat, 0);
-	if (last_pid == 0)
+	if (last_pid == -1)
 		return (pipe_stat);
 	if (WIFEXITED(pipe_stat))
 		return (WEXITSTATUS(pipe_stat));
