@@ -8,21 +8,27 @@ INC_DIR:= include
 
 NAME:= minishell
 
-LFT_DIR:= libft
+LFT_DIR:= src/libft
 LFT:= $(LFT_DIR)/libft.a
 
-SRCS = src/main.c \
+SRCS:= $(addprefix src/, \
+	main.c \
 	$(addprefix lexer/, lexer.c) \
 	$(addprefix utils/, str_utils.c) \
 	$(addprefix parser/, grammar.c grammar2.c parser_utils.c) \
-	$(addprefix exec/, exec.c) \
+	$(addprefix exec/, exec.c exec2.c expan.c redir.c) \
 	$(addprefix builtins/, builtins.c) \
+)
 
-OBJS = $(SRCS:.c=.o)
+HDR:= src/exec/exec.h
+ 
+INC:= $(addprefix $(INC_DIR)/, minishell.h utils.h)
+
+OBJS:= $(SRCS:.c=.o)
 
 all: $(NAME)
 
-$(NAME): $(LFT) $(OBJS)
+$(NAME): $(HDR) $(INC) $(LFT) $(OBJS)
 	$(CC) $(CFLAGS) $(LIB_FLAGS) $(OBJS) $(LFT) -o $(NAME)
 
 %.o: %.c
@@ -30,6 +36,7 @@ $(NAME): $(LFT) $(OBJS)
 
 lft:
 	$(MAKE) bonus -C $(LFT_DIR)
+	cp $(LFT_DIR)/libft.h $(INC_DIR)
 
 $(LFT): lft
 

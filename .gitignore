@@ -4,5 +4,6 @@ a.out
 compile_commands.json
 .cache
 minishell
-libft/bonus
+src/libft/bonus
 *.pdf
+include/libft.h
