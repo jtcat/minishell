@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/13 02:13:40 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/09/26 11:49:41 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/26 17:38:16 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -215,13 +215,19 @@ int	exec_builtin(t_shctx *ctx, t_cmd *cmd)
 
 int	file_redir(t_shctx *ctx, char *fname_ref, int red_type)
 {
+	int	redir_to; 
 	char *const	exp_filename = expand_word(ctx, &fname_ref);
-	const int	redir_to = open(exp_filename,
+
+	if (!ft_strcmp(exp_filename, ""))
+	{
+		ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX "ambiguous expansion");
+		return (-1);
+	}
+	redir_to = open(exp_filename,
 			(red_type == red_in) * (O_RDONLY)
 			+ (red_type == red_out) * FILE_TRUNC
 			+ (red_type == red_out_ap) * FILE_APPEND,
 		  ACCESS_BITS);
-
 	if (redir_to < 0)
 	{
 		perror(MSH_ERR_PFIX);
@@ -236,8 +242,10 @@ int	file_redir(t_shctx *ctx, char *fname_ref, int red_type)
 	return (redir_to);
 }
 
-void	pipe_redir(int iofd[2])
+void	pipe_redir(int iofd[2], int piperfd)
 {
+	if (piperfd > 0)
+		close(piperfd);
 	if (iofd[1] > 0)
 	{
 		dup2(iofd[1], STDIN_FILENO);
@@ -252,13 +260,13 @@ void	pipe_redir(int iofd[2])
 
 // File names can be expanded
 // Here_doc delims cannot
-int	resolve_redirs(t_shctx *ctx, t_cmd *cmd, int pipefd[2])
+int	resolve_redirs(t_shctx *ctx, t_cmd *cmd, int pipefd[2], int piperfd)
 {
 	t_list	*redir;
-	int		redir_stat;
 	t_token	*redir_tok;
+	int		redir_stat;
 
-	pipe_redir(pipefd);
+	pipe_redir(pipefd, piperfd);
 	redir = cmd->redirs;
 	while (redir)
 	{
@@ -291,21 +299,24 @@ int	stop_cmd(t_shctx *ctx, int pid, int *exitval)
 // exitval is only used as external var by builtins running in the main process
 //
 // I don't think execve should fail.
-// If it does, I don't know what exit code to return
-int	exec_cmd(t_cmd *cmd, t_shctx *ctx, int iofd[2], int *exitval)
+// If it does, I don't know what the expected bash-like
+// behaviour is
+//
+// First arg expansion will fail if it's NULL (like in '< file.txt' for example)
+int	exec_cmd(t_cmd *cmd, t_shctx *ctx, int iofd[2], int piperfd, int *exitval)
 {
 	char	**args;
 	int		pid;
 
 	pid = 0;
+	expand_word(ctx, (char **)cmd->args->content);
 	if (iofd[0] > -1 || iofd[1] > -1 || !get_builtinfunc(cmd))
 		pid = fork();
 	if (pid > 0)
 		return (pid);
-	*exitval = resolve_redirs(ctx, cmd, iofd);
+	*exitval = resolve_redirs(ctx, cmd, iofd, piperfd);
 	if (*exitval)
 		return (stop_cmd(ctx, pid, exitval));
-	expand_word(ctx, (char **)cmd->args->content);
 	if (get_builtinfunc(cmd))
 	{
 		*exitval = exec_builtin(ctx, cmd);
@@ -316,6 +327,7 @@ int	exec_cmd(t_cmd *cmd, t_shctx *ctx, int iofd[2], int *exitval)
 		return (stop_cmd(ctx, pid, exitval));
 	execve(*(char **)cmd->args->content, expand_args(ctx, cmd, &args), ctx->envp);
 	free(args);
+	sctx_destroy(ctx);
 	*exitval = 1;
 	perror(MSH_ERR_PFIX);
 	return (stop_cmd(ctx, pid, exitval));
@@ -343,7 +355,7 @@ int	exec_pipeline(t_shctx *ctx, t_list *cmd_lst)
 		else
 			pipe_fd[1] = -1;
 		last_pid = exec_cmd((t_cmd *)(cmd_lst->content), ctx,
-			(int [2]){pipe_fd[1], tmp_fd}, &pipe_stat);
+			(int [2]){pipe_fd[1], tmp_fd}, pipe_fd[0], &pipe_stat);
 		if (tmp_fd > -1)
 			close(tmp_fd);
 		cmd_lst = cmd_lst->next;
