@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/26 15:23:11 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/09/26 14:22:15 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/26 14:30:29 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,7 @@ bool	synt_err(char errctx[], t_list **cursor, bool	*parser_err_flag)
 
 // Returns read fd to buffer containing here_doc input
 // Should be closed when used
+// Revisit hd_fd dup, close and set. It's left open at the end
 void	read_hd(t_cmd *cmd, t_token *delimtok)
 {
 	const char	*delim = delimtok->str;
