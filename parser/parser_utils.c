@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/26 15:23:11 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/09/26 01:11:08 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/26 14:22:15 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,12 +59,13 @@ void	read_hd(t_cmd *cmd, t_token *delimtok)
 	line = readline(HD_PROMPT);
 	while (line)
 	{
-		if (ft_strncmp(line, delim, ft_strlen(delim)) == 0 && line[ft_strlen(delim)] == '\n')
+		if (ft_strcmp(line, delim) == 0 && line[ft_strlen(delim)] == '\0')
 		{
 			free(line);
 			break ;
 		}
 		ft_putstr_fd(line, pipefd[1]);
+		ft_putchar_fd('\n', pipefd[1]);
 		free(line);
 		line = readline(HD_PROMPT);
 	}
