@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/26 15:18:33 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/09/26 01:54:41 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/26 02:38:28 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@ bool	parse_redirect(t_list **cursor, t_cmd *cmd, bool *err_flag)
 	 	read_hd(cmd, get_token(cursor));
 	else
 		ft_lstadd_back(&cmd->redirs, ft_lstnew(get_token(cursor)));
+	get_token(cursor)->type = red_type;
 	consume_cursor(cursor);
 	return (true);
 }
@@ -71,6 +72,7 @@ bool	parse_simple_cmd(t_list **cursor, t_list **pipeline, bool *err_flag)
 
 	cmd = ft_calloc(1, sizeof(t_cmd));
 	cmd->hd_fd = -1;
+	cmd->redirs = NULL;
 	if (parse_cmd_prefix(cursor, cmd, err_flag))
 	{
 		if (test_cursor(cursor, word))

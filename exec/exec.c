@@ -6,13 +6,14 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/13 02:13:40 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/09/26 02:02:40 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/26 02:28:47 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 #include "minishell.h"
 #include <limits.h>
+#include <string.h>
 #include <utils.h>
 #include <errno.h>
 #include <stdbool.h>
@@ -166,7 +167,7 @@ char	**expand_args(t_shctx *ctx, t_cmd *cmd, char ***args)
 	*args = malloc(sizeof(char *) * (cmd->arg_n + 1));
 	arg_iter = cmd->args->next;
 	i = 1;
-	(*args)[0] = cmd->args->content;
+	(*args)[0] = *(char **)cmd->args->content;
 	(*args)[cmd->arg_n] = NULL;
 	while (arg_iter)
 	{
@@ -269,7 +270,7 @@ int	resolve_redirs(t_shctx *ctx, t_cmd *cmd, int pipefd[2])
 			|| redir_tok->type == red_in)
 		{
 			redir_stat = file_redir(ctx, redir_tok->str, redir_tok->type);
-			if (redir_stat != 0)
+			if (redir_stat < 0)
 				return (redir_stat);
 		}
 		redir = redir->next;
@@ -315,7 +316,7 @@ int	exec_cmd(t_cmd *cmd, t_shctx *ctx, int iofd[2], int *exitval)
 	*exitval = resolve_cmd(ctx, (char **)cmd->args->content);
 	if (*exitval)
 		return (stop_cmd(ctx, pid, exitval));
-	execve(cmd->args->content, expand_args(ctx, cmd, &args), ctx->envp);
+	execve(*(char **)cmd->args->content, expand_args(ctx, cmd, &args), ctx->envp);
 	free(args);
 	*exitval = 1;
 	perror(MSH_ERR_PFIX);
