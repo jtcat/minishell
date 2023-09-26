@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/25 14:22:48 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/09/26 01:31:39 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/26 21:09:15 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,6 +115,8 @@ int	cd_cmd(t_shctx *ctx, char **args)
 int	pwd_cmd(t_shctx *ctx, char **args)
 {
 	char	*cwd;
+	(void)ctx;
+	(void)args;
 
 	cwd = getcwd(NULL, 0);
 	printf("%s\n", cwd);
@@ -125,6 +127,7 @@ int	pwd_cmd(t_shctx *ctx, char **args)
 int	env_cmd(t_shctx *ctx, char **args)
 {
 	char *const	*iter = ctx->envp;
+	(void)args;
 
 	while (*iter)
 		printf("%s\n",*(iter++));
