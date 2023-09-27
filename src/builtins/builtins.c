@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/25 14:22:48 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/09/26 23:03:24 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/27 20:56:21 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -253,9 +253,36 @@ int	unset_cmd(t_shctx *ctx, char **var_ids)
 	return (0);
 }
 
+int	export_ls_vars(t_shctx *ctx)
+{
+	size_t		i;
+	const char	*lst_pckd;
+	const char	*lrgst_nxt;
+	char *const	*var;
+
+	lst_pckd = NULL;
+	i = 0; 
+	while (i < (ctx->envp_len - 1))
+	{
+		var = ctx->envp;
+		lrgst_nxt = NULL;
+		while (*var)
+		{
+			if ((!lrgst_nxt || ft_strcmp(*var, lrgst_nxt) < 0)
+				&& (!lst_pckd || (*var != lst_pckd && ft_strcmp(*var, lst_pckd) >= 0)))
+				lrgst_nxt = *var;
+			var++;
+		}
+		ft_dprintf(STDOUT_FILENO, "declare -x %s\n", lrgst_nxt);
+		lst_pckd = lrgst_nxt;
+		i++;
+	}
+	return (0);
+}
+
 int	export_cmd(t_shctx *ctx, char **var_ids)
 {
-	if (!var_ids)
-		return (env_cmd(ctx, var_ids));
-	return (export_vars(ctx, var_ids));
+	if (*var_ids)
+		return (export_vars(ctx, var_ids));
+	return (export_ls_vars(ctx));
 }
