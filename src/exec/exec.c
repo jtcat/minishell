@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/13 02:13:40 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/09/27 00:06:59 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/27 19:48:06 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,6 +60,10 @@ int	stop_cmd(t_shctx *ctx, int pid, int *exitval)
 // If it does, I don't know what the expected bash-like behaviour is
 //
 // First arg expansion will fail if it's NULL (like in '< file.txt' for example)
+//
+// Pipes should not be closed immediately after launching commands
+// The shell should wait until a command has finished before closing it's
+// input and output pipe fds.
 int	exec_cmd(t_cmd *cmd, t_shctx *ctx, int iofd[2], int piperfd, int *exitval)
 {
 	char	**args;
