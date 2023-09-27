@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:28 by leborges          #+#    #+#             */
-/*   Updated: 2023/09/26 14:28:12 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/27 20:40:32 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,7 @@ void	sctx_destroy(t_shctx *ctx)
 	rl_clear_history();
 }
 
-char	**dup_envp(char const *envp[])
+char	**dup_envp(t_shctx *ctx, char const *envp[])
 {
 	char	**new_envp;
 	int		len;
@@ -74,6 +74,7 @@ char	**dup_envp(char const *envp[])
 	len = 0;
 	while (envp[len])
 		len++;
+	ctx->envp_len = len;
 	new_envp = malloc(sizeof(char *) * (len + 1));
 	new_envp[len] = NULL;
 	while (len-- > 0)
@@ -90,7 +91,7 @@ int	main(int argc, char *argv[], char const *envp[])
 	ctx.input = NULL;
 	ctx.cmd_list = NULL;
 	ctx.tokens = NULL;
-	ctx.envp = dup_envp(envp);
+	ctx.envp = dup_envp(&ctx, envp);
 	ctx.cmd_status = 0;
 	if (argc == 1)
 	{

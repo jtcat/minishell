@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:25 by leborges          #+#    #+#             */
-/*   Updated: 2023/09/26 01:09:50 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/27 19:46:24 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,8 +59,8 @@ typedef struct s_cmd
 typedef struct s_ppline
 {
 	t_list			*cmds;
+	t_list			*pipes;
 	t_token_type	op;
-	int				pipe_n;
 }	t_ppline;
 
 // Common

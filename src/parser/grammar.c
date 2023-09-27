@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/26 15:16:27 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/09/26 01:10:42 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/27 20:23:11 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,6 @@ bool	parse_pipeline_suffix(t_list **curs, t_ppline **pipeline,
 	consume_cursor(curs);
 	if (!parse_simple_cmd(curs, &(*pipeline)->cmds, err_flag))
 		return (synt_err("pipeline_suffix_err", curs, err_flag));
-	(*pipeline)->pipe_n++;
 	return (true);
 }
 
