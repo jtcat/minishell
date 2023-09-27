@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/26 15:18:33 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/09/26 02:38:28 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/09/27 09:06:47 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ bool	parse_redirect(t_list **cursor, t_cmd *cmd, bool *err_flag)
 	if (!test_cursor(cursor, word))
 		return (synt_err("redirect_err", cursor, err_flag));
 	if (red_type == here_doc)
-	 	read_hd(cmd, get_token(cursor));
+		read_hd(cmd, get_token(cursor));
 	else
 		ft_lstadd_back(&cmd->redirs, ft_lstnew(get_token(cursor)));
 	get_token(cursor)->type = red_type;
