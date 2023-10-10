@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/27 00:11:03 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/09/27 00:14:21 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/10/10 13:03:44 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ void	str_cat(char **dst_ref, char *src)
 char	*expand_var(t_shctx *ctx, char *cursor, char **expansion)
 {
 	char const	*start = cursor;
+	char		*tmp;
 	char		**env_i;
 	int			id_len;
 
@@ -43,8 +44,11 @@ char	*expand_var(t_shctx *ctx, char *cursor, char **expansion)
 	env_i = ctx->envp;
 	while (*env_i && ft_strncmp(*env_i, start, id_len) != 0)
 		env_i++;
-	if (env_i)
-		str_cat(expansion, ft_strchr(*env_i, '=') + 1);
+	if (!env_i)
+		return (cursor);
+	tmp = ft_strjoin(*expansion, ft_strchr(*env_i, '=') + 1);
+	free(*expansion);
+	*expansion = tmp;
 	return (cursor);
 }
 
@@ -64,16 +68,27 @@ char	*expand_word(t_shctx *ctx, char **word_ref)
 		if (*cursor == '\'')
 		{
 			str_cat(&expan, ft_substr(word_start, 0, cursor - word_start));
-			cursor = ft_strchr(cursor, '\'');
-			str_cat(&expan, ft_substr(word_start, 1, cursor - word_start - 1));
+			word_start = cursor + 1;
+			cursor = ft_strchr(cursor + 1, '\'');
+			str_cat(&expan, ft_substr(word_start, 0, cursor - word_start));
 			word_start = cursor + 1;
 		}
 		else if (*cursor == '"')
 		{
 			str_cat(&expan, ft_substr(word_start, 0, cursor - word_start));
+			cursor++;
+			word_start = cursor;
 			while (*cursor != '"')
+			{
 				if (*cursor == '$')
+				{
+					str_cat(&expan, ft_substr(word_start, 0, cursor - word_start - 1));
 					word_start = expand_var(ctx, cursor + 1, &expan);
+				}
+				cursor++;
+			}
+			str_cat(&expan, ft_substr(word_start, 0, cursor - word_start));
+			word_start = cursor + 1;
 		}
 		else if (*cursor == '$')
 			word_start = expand_var(ctx, cursor + 1, &expan);
