@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/27 00:11:03 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/10 13:03:44 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/23 11:11:53 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,20 +101,21 @@ char	*expand_word(t_shctx *ctx, char **word_ref)
 }
 
 // Returns string array with every argument expanded
-char	**expand_args(t_shctx *ctx, t_cmd *cmd, char ***args)
+char	**expand_args(t_shctx *ctx, t_cmd *cmd)
 {
+	char	**args;
 	t_list	*arg_iter;
 	int		i;
 
-	*args = malloc(sizeof(char *) * (cmd->arg_n + 1));
+	args = malloc(sizeof(char *) * (cmd->arg_n + 1));
 	arg_iter = cmd->args->next;
+	args[0] = *(char **)cmd->args->content;
+	args[cmd->arg_n] = NULL;
 	i = 1;
-	(*args)[0] = *(char **)cmd->args->content;
-	(*args)[cmd->arg_n] = NULL;
 	while (arg_iter)
 	{
-		(*args)[i++] = expand_word(ctx, arg_iter->content);
+		args[i++] = expand_word(ctx, arg_iter->content);
 		arg_iter = arg_iter->next;
 	}
-	return (*args);
+	return (args);
 }

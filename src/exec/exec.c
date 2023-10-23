@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/13 02:13:40 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/09/27 19:48:06 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/10/23 11:12:29 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,8 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+extern int	g_exit_val;
+
 int	exec_builtin(t_shctx *ctx, t_cmd *cmd)
 {
 	char		**args;
@@ -29,7 +31,7 @@ int	exec_builtin(t_shctx *ctx, t_cmd *cmd)
 	int			std_fds[2];
 
 	builtin_func = get_builtinfunc(cmd);
-	expand_args(ctx, cmd, &args);
+	args = expand_args(ctx, cmd);
 	if (ft_strcmp(*(char **)cmd->args->content, "exit"))
 	{
 		std_fds[1] = dup(STDOUT_FILENO);
@@ -64,7 +66,7 @@ int	stop_cmd(t_shctx *ctx, int pid, int *exitval)
 // Pipes should not be closed immediately after launching commands
 // The shell should wait until a command has finished before closing it's
 // input and output pipe fds.
-int	exec_cmd(t_cmd *cmd, t_shctx *ctx, int iofd[2], int piperfd, int *exitval)
+int	exec_cmd(t_cmd *cmd, t_shctx *ctx, int iofd[2], int piperfd)
 {
 	char	**args;
 	int		pid;
@@ -75,24 +77,19 @@ int	exec_cmd(t_cmd *cmd, t_shctx *ctx, int iofd[2], int piperfd, int *exitval)
 		pid = fork();
 	if (pid > 0)
 		return (pid);
-	*exitval = resolve_redirs(ctx, cmd, iofd, piperfd);
-	if (*exitval)
-		return (stop_cmd(ctx, pid, exitval));
+	g_exit_val = resolve_redirs(ctx, cmd, iofd, piperfd);
+	if (g_exit_val)
+		return (stop_cmd(ctx, pid, &g_exit_val));
 	if (get_builtinfunc(cmd))
 	{
-		*exitval = exec_builtin(ctx, cmd);
-		return (stop_cmd(ctx, pid, exitval));
+		g_exit_val = exec_builtin(ctx, cmd);
+		return (stop_cmd(ctx, pid, &g_exit_val));
 	}
-	*exitval = resolve_cmd(ctx, (char **)cmd->args->content);
-	if (*exitval)
-		return (stop_cmd(ctx, pid, exitval));
-	execve(*(char **)cmd->args->content,
-		expand_args(ctx, cmd, &args), ctx->envp);
-	free(args);
-	sctx_destroy(ctx);
-	*exitval = 1;
-	perror(MSH_ERR_PFIX);
-	return (stop_cmd(ctx, pid, exitval));
+	resolve_cmd(ctx, (char **)cmd->args->content);
+	args = expand_args(ctx, cmd);
+	execve(*(char **)cmd->args->content, args, ctx->envp);
+	handle_exec_err(ctx, cmd, args);
+	return (pid);
 }
 
 // Simple builtins (ones that don't fork) might
@@ -101,23 +98,22 @@ int	exec_cmd(t_cmd *cmd, t_shctx *ctx, int iofd[2], int piperfd, int *exitval)
 //
 // Duplication and restoration of stdin and stdout
 // between command execution might be necessary
-int	exec_pipeline(t_shctx *ctx, t_list *cmd_lst)
+void	exec_pipeline(t_shctx *ctx, t_list *cmd_lst)
 {
 	int	pipe_fd[2];
 	int	tmp_fd;
 	int	pipe_stat;
 	int	last_pid;
 
-	pipe_fd[0] = -1;
 	tmp_fd = -1;
 	while (cmd_lst)
 	{
+		pipe_fd[0] = -1;
+		pipe_fd[1] = -1;
 		if (cmd_lst->next)
 			pipe(pipe_fd);
-		else
-			pipe_fd[1] = -1;
 		last_pid = exec_cmd((t_cmd *)(cmd_lst->content), ctx,
-				(int [2]){pipe_fd[1], tmp_fd}, pipe_fd[0], &pipe_stat);
+				(int [2]){pipe_fd[1], tmp_fd}, pipe_fd[0]);
 		if (tmp_fd > -1)
 			close(tmp_fd);
 		cmd_lst = cmd_lst->next;
@@ -129,12 +125,14 @@ int	exec_pipeline(t_shctx *ctx, t_list *cmd_lst)
 	}
 	waitpid(last_pid, &pipe_stat, 0);
 	if (last_pid == -1)
-		return (pipe_stat);
+		return ;
 	if (WIFEXITED(pipe_stat))
-		return (WEXITSTATUS(pipe_stat));
+	 	g_exit_val = WEXITSTATUS(pipe_stat);
 	if (WIFSIGNALED(pipe_stat))
-		return ((unsigned char)128 + WTERMSIG(pipe_stat));
-	return (WEXITSTATUS(pipe_stat));
+	 	g_exit_val = (unsigned char)(128 + WTERMSIG(pipe_stat));
+	while (wait(NULL) > 0)
+		;
+	g_exit_val = WEXITSTATUS(pipe_stat);
 }
 
 void	exec_cmdlist(t_shctx *ctx, t_list *ppline_lst)
@@ -145,9 +143,9 @@ void	exec_cmdlist(t_shctx *ctx, t_list *ppline_lst)
 	{
 		ppline = ((t_ppline *)(ppline_lst->content));
 		if (ppline->op == lst_no_op
-			|| (ppline->op == lst_and && ctx->cmd_status == 0)
-			|| (ppline->op == lst_or && ctx->cmd_status > 0))
-			ctx->cmd_status = exec_pipeline(ctx, ppline->cmds);
+			|| (ppline->op == lst_and && g_exit_val == 0)
+			|| (ppline->op == lst_or && g_exit_val > 0))
+			exec_pipeline(ctx, ppline->cmds);
 		ppline_lst = ppline_lst->next;
 	}
 }
