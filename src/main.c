@@ -6,13 +6,14 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:28 by leborges          #+#    #+#             */
-/*   Updated: 2023/10/10 13:14:13 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/18 18:48:31 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdlib.h>
 #include <minishell.h>
 #include "libft.h"
+#include "libft/libft.h"
 #include "utils.h"
 #include <stdio.h>
 #include <readline/readline.h>
@@ -38,8 +39,8 @@ void	del_cmd(void *content)
 
 	cmd = (t_cmd *)content;
 	ft_lstclear(&cmd->args, do_nothing);
-	if (cmd->hd_fd > -1)
-		close(cmd->hd_fd);
+	if (cmd->hd_input)
+		ft_lstclear(&cmd->hd_input, free);
 	if (cmd->redirs)
 		ft_lstclear(&cmd->redirs, do_nothing);
 	free(cmd);
@@ -80,7 +81,7 @@ char	**dup_envp(t_shctx *ctx, char const *envp[])
 	return (new_envp);
 }
 
-u_char	g_exit_val = 0;
+int	g_exit_val = 0;
 
 int	main(int argc, char *argv[], char const *envp[])
 {
