@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/13 02:13:40 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/23 11:12:29 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/23 11:33:00 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,13 +72,14 @@ int	exec_cmd(t_cmd *cmd, t_shctx *ctx, int iofd[2], int piperfd)
 	int		pid;
 
 	pid = -1;
-	expand_word(ctx, (char **)cmd->args->content);
+	if (cmd->args)
+		expand_word(ctx, (char **)cmd->args->content);
 	if (iofd[0] > -1 || iofd[1] > -1 || !get_builtinfunc(cmd))
 		pid = fork();
 	if (pid > 0)
 		return (pid);
 	g_exit_val = resolve_redirs(ctx, cmd, iofd, piperfd);
-	if (g_exit_val)
+	if (g_exit_val || !cmd->args)
 		return (stop_cmd(ctx, pid, &g_exit_val));
 	if (get_builtinfunc(cmd))
 	{
