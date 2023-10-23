@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/27 00:08:00 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/18 18:50:04 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/23 11:43:13 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,12 +82,12 @@ void	redir_hd(t_shctx *ctx, t_cmd *cmd)
 	while (iter)
 	{
 		expand_word(ctx, (char **)&iter->content);
-		ft_putstr_fd(iter->content, pipe_fd[0]);
-		ft_putchar_fd('\n', pipe_fd[0]);
+		ft_putstr_fd(iter->content, pipe_fd[1]);
+		ft_putchar_fd('\n', pipe_fd[1]);
 		iter = iter->next;
 	}
-	close(pipe_fd[0]);
-	dup2(pipe_fd[1], STDIN_FILENO);
+	close(pipe_fd[1]);
+	dup2(pipe_fd[0], STDIN_FILENO);
 }
 
 int	resolve_redirs(t_shctx *ctx, t_cmd *cmd, int pipefd[2], int piperfd)
