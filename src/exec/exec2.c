@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/26 23:14:59 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/23 11:36:23 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/23 12:07:24 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,8 +24,10 @@ extern int	g_exit_val;
 int		is_reg_file(const char *filename)
 {
 	struct	stat f_stat;
-	stat(filename, &f_stat);
-	return (S_ISREG(f_stat.st_mode));
+
+	if (stat(filename, &f_stat) == 0)
+		return (S_ISREG(f_stat.st_mode));
+	return (0);
 }
 
 void	handle_exec_err(t_shctx *ctx, t_cmd *cmd, char **args)
