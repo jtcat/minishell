@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/26 15:18:33 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/09/27 09:06:47 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/10/23 10:52:21 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,8 +71,6 @@ bool	parse_simple_cmd(t_list **cursor, t_list **pipeline, bool *err_flag)
 	t_cmd	*cmd;
 
 	cmd = ft_calloc(1, sizeof(t_cmd));
-	cmd->hd_fd = -1;
-	cmd->redirs = NULL;
 	if (parse_cmd_prefix(cursor, cmd, err_flag))
 	{
 		if (test_cursor(cursor, word))

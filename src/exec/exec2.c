@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/26 23:14:59 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/04 15:38:45 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/23 11:13:46 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,12 +82,6 @@ void	resolve_cmd(t_shctx *ctx, char **cmd_path_ref)
 		}
 		free(tmp_path);
 	}	
-//	if (lastaccess == 127)
-//		ft_dprintf(STDERR_FILENO,
-//			MSH_ERR_PFIX "%s: " MSH_CMD_NFOUND_ERR "\n", *cmd_path_ref);
-//	else
-//		ft_dprintf(STDERR_FILENO,
-//			MSH_ERR_PFIX "%s: " MSH_CMD_NPERM_ERR "\n", *cmd_path_ref);
 	free(cmd_suffix);
 	free_ptrarr((void **)path_dirs, free);
 	return ;

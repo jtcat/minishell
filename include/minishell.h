@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:25 by leborges          #+#    #+#             */
-/*   Updated: 2023/09/27 19:46:24 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/10/18 18:37:37 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@ typedef struct s_cmd
 {
 	t_list	*args;
 	t_list	*redirs;
-	int		hd_fd;
+	t_list	*hd_input;
 	int		arg_n;
 }	t_cmd;
 

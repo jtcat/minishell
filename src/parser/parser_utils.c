@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/26 15:23:11 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/09/27 09:06:06 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/10/18 18:37:45 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <readline/readline.h>
 #include <readline/history.h>
+#include <stdlib.h>
 
 t_token	*get_token(t_list **cursor)
 {
@@ -47,15 +48,15 @@ bool	synt_err(char errctx[], t_list **cursor, bool	*parser_err_flag)
 
 // Returns read fd to buffer containing here_doc input
 // Should be closed when used
-// Revisit hd_fd dup, close and set. It's left open at the end
+// If delim is unquoted, 
 void	read_hd(t_cmd *cmd, t_token *delimtok)
 {
 	char const	*delim = delimtok->str;
 	char		*line;
 	int			pipefd[2];
 
-	if (cmd->hd_fd > -1)
-		close(cmd->hd_fd);
+	if (cmd->hd_input != NULL)
+		ft_lstclear(&cmd->hd_input, free);
 	pipe(pipefd);
 	line = readline(HD_PROMPT);
 	while (line)
@@ -65,12 +66,8 @@ void	read_hd(t_cmd *cmd, t_token *delimtok)
 			free(line);
 			break ;
 		}
-		ft_putstr_fd(line, pipefd[1]);
-		ft_putchar_fd('\n', pipefd[1]);
-		free(line);
+		ft_lstadd_back(&cmd->hd_input, ft_lstnew(line));
 		line = readline(HD_PROMPT);
 	}
-	close(pipefd[1]);
-	cmd->hd_fd = pipefd[0];
 	ft_lstadd_back(&cmd->redirs, ft_lstnew(delimtok));
 }
