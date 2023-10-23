@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/26 23:14:59 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/23 11:13:46 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/23 11:36:23 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,10 +89,11 @@ void	resolve_cmd(t_shctx *ctx, char **cmd_path_ref)
 
 t_builtin_func	get_builtinfunc(t_cmd *cmd)
 {
-	char *const	cmd_name = *(char **)cmd->args->content;
+	const char *cmd_name;
 
-	if (!cmd_name)
+	if (!cmd->args)
 		return (NULL);
+	cmd_name = *(char **)cmd->args->content;
 	if (!ft_strcmp(cmd_name, "echo"))
 		return (echo_cmd);
 	if (!ft_strcmp(cmd_name, "pwd"))
