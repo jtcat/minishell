@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/27 00:08:00 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/23 11:43:13 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/24 11:45:16 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,10 +20,12 @@
 #include <string.h>
 #include <unistd.h>
 
+extern int	g_exit_val;
+
 void	handle_redir_err(char *fname)
 {
-		ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX "%s: %s\n",
-			fname, strerror(errno));
+	ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX "%s: %s\n",
+		fname, strerror(errno));
 }
 
 int	file_redir(t_shctx *ctx, char **fname_ref, int red_type)
@@ -109,9 +111,12 @@ int	resolve_redirs(t_shctx *ctx, t_cmd *cmd, int pipefd[2], int piperfd)
 		{
 			redir_stat = file_redir(ctx, &redir_tok->str, redir_tok->type);
 			if (redir_stat < 0)
-				return (redir_stat);
+			{
+				g_exit_val = 1;
+				return (0);
+			}
 		}
 		redir = redir->next;
 	}
-	return (0);
+	return (1);
 }

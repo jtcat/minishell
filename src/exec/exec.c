@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/13 02:13:40 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/23 11:33:00 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/24 13:03:32 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,12 +46,12 @@ int	exec_builtin(t_shctx *ctx, t_cmd *cmd)
 	return (cmd_ret);
 }
 
-int	stop_cmd(t_shctx *ctx, int pid, int *exitval)
+int	stop_cmd(t_shctx *ctx, int pid)
 {
 	if (pid == -1)
 		return (pid);
 	sctx_destroy(ctx);
-	exit(*exitval);
+	exit(g_exit_val);
 }
 
 // Argument expansion is messy right now.
@@ -78,13 +78,12 @@ int	exec_cmd(t_cmd *cmd, t_shctx *ctx, int iofd[2], int piperfd)
 		pid = fork();
 	if (pid > 0)
 		return (pid);
-	g_exit_val = resolve_redirs(ctx, cmd, iofd, piperfd);
-	if (g_exit_val || !cmd->args)
-		return (stop_cmd(ctx, pid, &g_exit_val));
+	if (!resolve_redirs(ctx, cmd, iofd, piperfd) || !cmd->args)
+		return (stop_cmd(ctx, pid));
 	if (get_builtinfunc(cmd))
 	{
 		g_exit_val = exec_builtin(ctx, cmd);
-		return (stop_cmd(ctx, pid, &g_exit_val));
+		return (stop_cmd(ctx, pid));
 	}
 	resolve_cmd(ctx, (char **)cmd->args->content);
 	args = expand_args(ctx, cmd);
@@ -98,12 +97,15 @@ int	exec_cmd(t_cmd *cmd, t_shctx *ctx, int iofd[2], int piperfd)
 // after redirection
 //
 // Duplication and restoration of stdin and stdout
-// between command execution might be necessary
+// between command execution might be necessary (DONE)
+//
+// Current command execution status must be stored
+// temporarily as to not overwrite global exit status
+// during redirection
 void	exec_pipeline(t_shctx *ctx, t_list *cmd_lst)
 {
 	int	pipe_fd[2];
 	int	tmp_fd;
-	int	pipe_stat;
 	int	last_pid;
 
 	tmp_fd = -1;
@@ -124,16 +126,15 @@ void	exec_pipeline(t_shctx *ctx, t_list *cmd_lst)
 		tmp_fd = dup(pipe_fd[0]);
 		close(pipe_fd[0]);
 	}
-	waitpid(last_pid, &pipe_stat, 0);
+	waitpid(last_pid, &g_exit_val, 0);
 	if (last_pid == -1)
 		return ;
-	if (WIFEXITED(pipe_stat))
-	 	g_exit_val = WEXITSTATUS(pipe_stat);
-	if (WIFSIGNALED(pipe_stat))
-	 	g_exit_val = (unsigned char)(128 + WTERMSIG(pipe_stat));
+	if (WIFEXITED(g_exit_val))
+		g_exit_val = WEXITSTATUS(g_exit_val);
+	else if (WIFSIGNALED(g_exit_val))
+		g_exit_val = (unsigned char)(128 + WTERMSIG(g_exit_val));
 	while (wait(NULL) > 0)
 		;
-	g_exit_val = WEXITSTATUS(pipe_stat);
 }
 
 void	exec_cmdlist(t_shctx *ctx, t_list *ppline_lst)

@@ -6,13 +6,15 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/27 00:11:03 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/23 11:11:53 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/24 11:46:09 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 #include "utils.h"
 #include "exec.h"
+
+extern int	g_exit_val;
 
 void	str_cat(char **dst_ref, char *src)
 {
@@ -33,7 +35,7 @@ char	*expand_var(t_shctx *ctx, char *cursor, char **expansion)
 
 	if (*cursor == '?')
 	{
-		*expansion = ft_itoa(ctx->cmd_status);
+		*expansion = ft_itoa(g_exit_val);
 		return (cursor + 1);
 	}
 	while (ft_isalnum(*cursor) || *cursor == '_')
@@ -82,7 +84,8 @@ char	*expand_word(t_shctx *ctx, char **word_ref)
 			{
 				if (*cursor == '$')
 				{
-					str_cat(&expan, ft_substr(word_start, 0, cursor - word_start - 1));
+					str_cat(&expan,
+						ft_substr(word_start, 0, cursor - word_start - 1));
 					word_start = expand_var(ctx, cursor + 1, &expan);
 				}
 				cursor++;
