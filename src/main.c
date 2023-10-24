@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:28 by leborges          #+#    #+#             */
-/*   Updated: 2023/10/18 18:48:31 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/24 13:16:35 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,6 +93,7 @@ int	main(int argc, char *argv[], char const *envp[])
 	ctx.tokens = NULL;
 	ctx.envp = dup_envp(&ctx, envp);
 	ctx.cmd_status = 0;
+	ctx.subshell = false;
 	if (argc == 1)
 	{
 		ctx.input = readline(MSH_CMD_PROMPT);

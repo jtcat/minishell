@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:25 by leborges          #+#    #+#             */
-/*   Updated: 2023/10/24 12:17:32 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/24 13:16:05 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,7 @@ typedef struct s_token
 
 typedef struct s_shctx
 {
+	bool			subshell;
 	char			**envp;
 	char			*input;
 	t_list			*exports;

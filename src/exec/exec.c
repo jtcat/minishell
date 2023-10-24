@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/13 02:13:40 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/24 13:03:32 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/24 13:21:04 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,6 +78,7 @@ int	exec_cmd(t_cmd *cmd, t_shctx *ctx, int iofd[2], int piperfd)
 		pid = fork();
 	if (pid > 0)
 		return (pid);
+	ctx->subshell = pid == 0;
 	if (!resolve_redirs(ctx, cmd, iofd, piperfd) || !cmd->args)
 		return (stop_cmd(ctx, pid));
 	if (get_builtinfunc(cmd))
