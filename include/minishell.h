@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:25 by leborges          #+#    #+#             */
-/*   Updated: 2023/10/18 18:37:37 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/24 12:17:32 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ typedef struct s_shctx
 {
 	char			**envp;
 	char			*input;
+	t_list			*exports;
 	size_t			envp_len;
 	t_list			*cmd_list;
 	t_list			*tokens;
@@ -59,7 +60,6 @@ typedef struct s_cmd
 typedef struct s_ppline
 {
 	t_list			*cmds;
-	t_list			*pipes;
 	t_token_type	op;
 }	t_ppline;
 
