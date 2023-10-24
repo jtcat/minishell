@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/26 23:14:59 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/23 12:07:24 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/24 11:44:32 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,9 +21,9 @@
 
 extern int	g_exit_val;
 
-int		is_reg_file(const char *filename)
+int	is_reg_file(const char *filename)
 {
-	struct	stat f_stat;
+	struct stat	f_stat;
 
 	if (stat(filename, &f_stat) == 0)
 		return (S_ISREG(f_stat.st_mode));
@@ -40,7 +40,8 @@ void	handle_exec_err(t_shctx *ctx, t_cmd *cmd, char **args)
 	}
 	else
 	{
-		ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX "%s: %s\n", *args, strerror(errno));
+		ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX "%s: %s\n",
+			*args, strerror(errno));
 		g_exit_val = 126;
 	}
 	free(args);
@@ -86,12 +87,11 @@ void	resolve_cmd(t_shctx *ctx, char **cmd_path_ref)
 	}	
 	free(cmd_suffix);
 	free_ptrarr((void **)path_dirs, free);
-	return ;
 }
 
 t_builtin_func	get_builtinfunc(t_cmd *cmd)
 {
-	const char *cmd_name;
+	const char	*cmd_name;
 
 	if (!cmd->args)
 		return (NULL);
