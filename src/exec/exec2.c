@@ -30,7 +30,23 @@ int	is_reg_file(const char *filename)
 	return (0);
 }
 
-void	handle_exec_err(t_shctx *ctx, t_cmd *cmd, char **args)
+char	**conv_llenvp(size_t envp_len, t_list *envp)
+{
+	char	**new_envp;
+	size_t	i;
+
+	new_envp = malloc(sizeof(char *) * (envp_len + 1));
+	new_envp[envp_len] = NULL;
+	i = 0;
+	while (envp)
+	{
+		new_envp[i++] = envp->content;
+		envp = envp->next;
+	}
+	return (new_envp);
+}
+
+void	handle_exec_err(t_shctx *ctx, t_cmd *cmd, char **args, char **envp)
 {
 	(void)cmd;
 	if (access(*args, F_OK))
@@ -44,6 +60,7 @@ void	handle_exec_err(t_shctx *ctx, t_cmd *cmd, char **args)
 			*args, strerror(errno));
 		g_exit_val = 126;
 	}
+	free(envp);
 	free(args);
 	sctx_destroy(ctx);
 	exit(1);

@@ -69,6 +69,7 @@ int	stop_cmd(t_shctx *ctx, int pid)
 int	exec_cmd(t_cmd *cmd, t_shctx *ctx, int iofd[2], int piperfd)
 {
 	char	**args;
+	char	**envp;
 	int		pid;
 
 	pid = -1;
@@ -88,8 +89,9 @@ int	exec_cmd(t_cmd *cmd, t_shctx *ctx, int iofd[2], int piperfd)
 	}
 	resolve_cmd(ctx, (char **)cmd->args->content);
 	args = expand_args(ctx, cmd);
-	execve(*(char **)cmd->args->content, args, ctx->envp);
-	handle_exec_err(ctx, cmd, args);
+	envp = conv_llenvp(ctx->envp_len, ctx->envp);
+	execve(*(char **)cmd->args->content, args, envp);
+	handle_exec_err(ctx, cmd, args, envp);
 	return (pid);
 }
 

@@ -34,16 +34,14 @@ char	*get_var_val(t_shctx *ctx, char const *varname)
 	return (ft_strchr(get_var_ref(ctx, varname)->content, '=') + 1);
 }
 
-t_list	*dup_envp(char const *envp[])
+t_list	*dup_envp(t_shctx *ctx, char const *envp[])
 {
 	t_list	*new_envp;
 
 	new_envp = NULL;
-	while (*envp)
-	{
-		ft_lstadd_back(&new_envp, ft_lstnew(ft_strdup(*envp)));
-		envp++;
-	}
+	ctx->envp_len = 0;
+	while (envp[ctx->envp_len])
+		ft_lstadd_back(&new_envp, ft_lstnew(ft_strdup(envp[ctx->envp_len++])));
 	return (new_envp);
 }
 

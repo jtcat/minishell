@@ -23,7 +23,8 @@ char			*expand_word(t_shctx *ctx, char **word_ref);
 void			resolve_cmd(t_shctx *ctx, char **cmd_path_ref);
 int				resolve_redirs(t_shctx *ctx,
 					t_cmd *cmd, int pipefd[2], int piperfd);
-void			handle_exec_err(t_shctx *ctx, t_cmd *cmd, char **args);
+void			handle_exec_err(t_shctx *ctx, t_cmd *cmd, char **args, char **envp);
+char			**conv_llenvp(size_t envp_len, t_list *envp);
 
 // Executer entry point
 void	exec_cmdlist(t_shctx *ctx, t_list *ppline_lst);

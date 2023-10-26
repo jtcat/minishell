@@ -30,7 +30,7 @@ char	*expand_var(t_shctx *ctx, char *cursor, char **expansion)
 {
 	char const	*start = cursor;
 	char		*tmp;
-	char		**env_i;
+	t_list		*env_i;
 	int			id_len;
 
 	if (*cursor == '?')
@@ -44,11 +44,11 @@ char	*expand_var(t_shctx *ctx, char *cursor, char **expansion)
 		return (NULL);
 	id_len = cursor - start;
 	env_i = ctx->envp;
-	while (*env_i && ft_strncmp(*env_i, start, id_len) != 0)
-		env_i++;
+	while (env_i && ft_strncmp(env_i->content, start, id_len) != 0)
+		env_i = env_i->next;
 	if (!env_i)
 		return (cursor);
-	tmp = ft_strjoin(*expansion, ft_strchr(*env_i, '=') + 1);
+	tmp = ft_strjoin(*expansion, ft_strchr(env_i->content, '=') + 1);
 	free(*expansion);
 	*expansion = tmp;
 	return (cursor);
