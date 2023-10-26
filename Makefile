@@ -27,6 +27,8 @@ OBJS:= $(SRCS:.c=.o)
 
 all: $(NAME)
 
+bonus: $(NAME)
+
 $(NAME): $(HDR) $(LFT) $(OBJS)
 	$(CC) $(CFLAGS) $(LIB_FLAGS) $(OBJS) $(LFT) -o $(NAME)
 
