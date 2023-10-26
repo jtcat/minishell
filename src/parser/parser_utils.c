@@ -6,14 +6,13 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/26 15:23:11 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/18 18:37:45 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/24 20:08:32 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "grammar.h"
-#include "libft.h"
-#include "minishell.h"
+#include <minishell.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 #include <stdlib.h>

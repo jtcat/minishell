@@ -6,15 +6,17 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:28 by leborges          #+#    #+#             */
-/*   Updated: 2023/10/24 13:16:35 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/24 20:00:45 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdlib.h>
 #include <minishell.h>
-#include "libft.h"
-#include "libft/libft.h"
-#include "utils.h"
+#include <shell_utils.h>
+#include <exec.h>
+#include <parser.h>
+#include <lexer.h>
+#include <env.h>
 #include <stdio.h>
 #include <readline/readline.h>
 #include <readline/history.h>
@@ -63,22 +65,6 @@ void	sctx_destroy(t_shctx *ctx)
 	ft_lstclear(&ctx->tokens, del_token);
 	ft_lstclear(&ctx->cmd_list, del_pipe);
 	rl_clear_history();
-}
-
-char	**dup_envp(t_shctx *ctx, char const *envp[])
-{
-	char	**new_envp;
-	int		len;
-
-	len = 0;
-	while (envp[len])
-		len++;
-	ctx->envp_len = len;
-	new_envp = malloc(sizeof(char *) * (len + 1));
-	new_envp[len] = NULL;
-	while (len-- > 0)
-		new_envp[len] = ft_strdup((char *)envp[len]);
-	return (new_envp);
 }
 
 int	g_exit_val = 0;

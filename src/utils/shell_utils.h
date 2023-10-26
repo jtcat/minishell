@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   utils.h                                            :+:      :+:    :+:   */
+/*   shell_utils.h                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 23:37:19 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/09/25 21:22:30 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/10/24 20:05:45 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,9 +25,6 @@ void	free_ptrarr(void **arr, void (*del)(void *));
 
 // Struct utils
 t_token	*get_token(t_list **list);
-
-// Parser utils
-void	read_hd(t_cmd *cmd, t_token *delimtok);
 
 // Internal shell context interface
 char	*sctx_getenv(t_shctx *ctx, char *var_id);

@@ -6,13 +6,16 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/25 14:22:48 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/24 13:15:38 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/25 11:09:55 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
-#include <utils.h>
+#include <errno.h>
 #include <minishell.h>
+#include <shell_utils.h>
+#include <env.h>
+#include <string.h>
 #include <unistd.h>
 #include <stdio.h>
 
@@ -41,75 +44,44 @@ int	echo_cmd(t_shctx *ctx, char **args)
 	return (0);
 }
 
-int	cd_slash_dots(char const *new_dir)
+void	set_var(t_shctx *ctx, const char *varname, const char *val)
 {
-	return (*new_dir == '/' || !ft_strcmp(new_dir, "..")
-		|| !ft_strcmp(new_dir, ".")
-		|| !ft_strncmp(new_dir, "../", 3)
-		|| !ft_strncmp(new_dir, "./", 2));
-}
+	char	*newvar;
+	char	*tmp;
+	t_list	*var_ref;
 
-char	*get_var_id(char const *var)
-{
-	return (ft_substr(var, 0, ft_strchr(var, '=') - var));
-}
-
-char	*sctx_getenv(t_shctx *ctx, char *const var_id)
-{
-	char	**envp;
-	char	*envp_var_id;
-
-	envp = ctx->envp;
-	while (*envp)
+	var_ref = get_var_ref(ctx, varname);
+	tmp = ft_strjoin(varname, "=");
+	newvar = ft_strjoin(tmp, val);
+	free(tmp);
+	if (var_ref)
 	{
-		envp_var_id = get_var_id(*envp);
-		if (ft_strcmp(envp_var_id, var_id) == 0)
-		{
-			free(envp_var_id);
-			return (ft_strchr(*envp, '=') + 1);
-		}
-		free(envp_var_id);
-		envp++;
+		free(var_ref->content);
+		var_ref->content = newvar;
 	}
-	return (NULL);
-}
-
-int	cd(t_shctx *ctx, char *new_dir)
-{
-	char	*temp_path;
-	char	*curpath;
-	char	*pwd = sctx_getenv(ctx, "PWD");
-	char	*home = sctx_getenv(ctx, "HOME");
-
-	temp_path = NULL;
-	if (!new_dir && *home)
-		new_dir = home;
-	else if (cd_slash_dots(new_dir))
-		curpath = new_dir;
-	else if (*new_dir != '/')
-	{
-		temp_path = ft_strjoin("/", new_dir);
-		curpath = ft_strjoin(pwd, temp_path);
-		free(temp_path);
-	}
-	if (chdir(curpath) != 0)
-	{
-		ft_putstr_fd("cd: no such file or directory: ", STDERR_FILENO);
-		ft_putstr_fd(curpath, STDERR_FILENO);
-		ft_putstr_fd("\n", STDERR_FILENO);
-		return (1);
-	}
-	if (temp_path)
-		free(curpath);
-	return (0);
+	else
+		ft_lstadd_back(&ctx->envp, ft_lstnew(newvar));
 }
 
 int	cd_cmd(t_shctx *ctx, char **args)
 {
-	if (*(args + 1) == NULL)
-		return (cd(ctx, *args));
-	ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX "cd: too many arguments\n");
+	char	*curpath;
+	char	*pwd = sctx_getenv(ctx, "PWD");
+	char	*home = sctx_getenv(ctx, "HOME");
+
+	if (*(args + 1) != NULL)
+		ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX "cd: too many arguments\n");
 	return (ERRC_CD_ARGS);
+	if (!*args && *home)
+		curpath = home;
+	if (chdir(curpath) != 0)
+	{
+		ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX "cd: %s: %s\n", *args, strerror(errno));
+		return (1);
+	}
+	set_var(ctx, "PWD", curpath);
+	set_var(ctx, "OLD_PWD", pwd);
+	return (0);
 }
 
 int	pwd_cmd(t_shctx *ctx, char **args)
@@ -119,18 +91,21 @@ int	pwd_cmd(t_shctx *ctx, char **args)
 	(void)args;
 
 	cwd = getcwd(NULL, 0);
-	printf("%s\n", cwd);
+	ft_dprintf(STDOUT_FILENO, "%s\n", cwd);
 	free(cwd);
 	return (0);
 }
 
 int	env_cmd(t_shctx *ctx, char **args)
 {
-	char *const	*iter = ctx->envp;
+	t_list	*iter = ctx->envp;
 	(void)args;
 
-	while (*iter)
-		printf("%s\n",*(iter++));
+	while (iter)
+	{
+		ft_dprintf(STDOUT_FILENO, "%s\n", iter->content);
+		iter = iter->next;
+	}
 	return (0);
 }
 
@@ -162,95 +137,34 @@ int	exit_cmd(t_shctx *ctx, char **args)
 	return (ctx->cmd_status);
 }
 
-char	*find_var(char const *old_var, char **new_vars)
-{
-	char const	*old_id;
-	char const	*new_id;
-
-	while (*new_vars)
-	{
-		old_id = get_var_id(old_var);
-		new_id = get_var_id(*new_vars);
-
-		if (ft_strcmp(old_id, new_id) == 0)
-			return (*new_vars);
-		new_vars++;
-	}
-	return (*new_vars);
-}
-
-void	add_vars(char *envp[], char *new_envp[], char **new_vars)
-{
-	char	*match_new_var;
-
-	match_new_var = NULL;
-	while (*envp)
-	{
-		match_new_var = find_var(*envp, new_vars);
-		if (match_new_var)
-			*new_envp = ft_strdup(match_new_var);
-		else 
-			*new_envp = *envp;
-		new_envp++;
-		envp++;
-	}
-}
-
-// Need to validate ID: failing an assigment does not prevent others
+// Need to validate ID, failing an assigment does not prevent others
 int	export_vars(t_shctx *ctx, char **vars)
 {
-	char	**vars_iter;
-	char 	*var_id;
-	char 	**new_envp;
-	int		new_ids;
-
-	new_ids = 0;
-	vars_iter = vars;
-	while (*vars_iter)
+	while (*vars)
 	{
-		var_id = get_var_id(*vars_iter);
-		if (!sctx_getenv(ctx, var_id))
-			new_ids++;
-		free(var_id);
-		vars_iter++;
+		if (val_var_id(*vars))
+			set_var(ctx, *vars, get_var_val(ctx, ft_strchr(*vars, '=') + 1));
+		else
+		 	//print err;
+		vars++;
 	}
-	ctx->envp_len = ctx->envp_len + new_ids;
-	new_envp = malloc(sizeof(char *) * (ctx->envp_len + new_ids));
-	add_vars(ctx->envp, new_envp, vars);
-	free(ctx->envp);
-	ctx->envp = new_envp;
 	return (0);
-}
-
-void	remove_vars(char **envp, char **new_envp, char **var_ids)
-{
-	while (*envp)
-	{
-		if (!find_var(*envp, var_ids))
-			*new_envp = *envp;
-		envp++;
-	}
 }
 
 int	unset_cmd(t_shctx *ctx, char **var_ids)
 {
-	char 	**new_envp;
-	int		old_ids;
+	t_list *var_ref;
 	
-	if (*var_ids == NULL)
-		return (0);
-	old_ids = 0;
-	while (var_ids)
+	while (*var_ids)
 	{
-		if (sctx_getenv(ctx, *var_ids))
-			old_ids++;
+		var_ref = get_var_ref(ctx, *var_ids);
+		if (var_ref)
+			ft_dlst_remove(var_ref, free);
+		var_ref = get_export_ref(ctx, *var_ids);
+		if (var_ref)
+			ft_dlst_remove(var_ref, free);
 		var_ids++;
 	}
-	ctx->envp_len = ctx->envp_len - old_ids;
-	new_envp = malloc(sizeof(char *) * ctx->envp_len);
-	remove_vars(ctx->envp, new_envp, var_ids);
-	free(ctx->envp);
-	ctx->envp = new_envp;
 	return (0);
 }
 
@@ -259,22 +173,25 @@ int	export_ls_vars(t_shctx *ctx)
 	size_t		i;
 	const char	*lst_pckd;
 	const char	*lrgst_nxt;
-	char *const	*var;
+	t_list		*var;
 
 	lst_pckd = NULL;
 	i = 0; 
 	while (i < (ctx->envp_len - 1))
 	{
-		var = ctx->envp;
+		var = ctx->exports;
 		lrgst_nxt = NULL;
-		while (*var)
+		while (var)
 		{
-			if ((!lrgst_nxt || ft_strcmp(*var, lrgst_nxt) < 0)
-				&& (!lst_pckd || (*var != lst_pckd && ft_strcmp(*var, lst_pckd) >= 0)))
-				lrgst_nxt = *var;
-			var++;
+			if ((!lrgst_nxt || ft_strcmp(var->content, lrgst_nxt) < 0)
+				&& (!lst_pckd || (var->content != lst_pckd && ft_strcmp(var->content, lst_pckd) >= 0)))
+				lrgst_nxt = var->content;
+			var = var->next;
 		}
-		ft_dprintf(STDOUT_FILENO, "declare -x %s\n", lrgst_nxt);
+		if (get_var_val(ctx, lrgst_nxt))
+			ft_dprintf(STDOUT_FILENO, "declare -x %s=\"%s\"\n", lrgst_nxt, get_var_val(ctx, lrgst_nxt));
+		else
+			ft_dprintf(STDOUT_FILENO, "declare -x %s\n", lrgst_nxt);
 		lst_pckd = lrgst_nxt;
 		i++;
 	}

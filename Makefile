@@ -4,8 +4,6 @@ CFLAGS:= -g -Wall -Wextra -Werror
 
 LIB_FLAGS:= -lreadline
 
-INC_DIR:= include
-
 NAME:= minishell
 
 LFT_DIR:= src/libft
@@ -17,26 +15,26 @@ SRCS:= $(addprefix src/, \
 	$(addprefix utils/, str_utils.c) \
 	$(addprefix parser/, grammar.c grammar2.c parser_utils.c) \
 	$(addprefix exec/, exec.c exec2.c expan.c redir.c) \
+	$(addprefix env/, env.c ) \
 	$(addprefix builtins/, builtins.c) \
 )
 
-HDR:= src/exec/exec.h
+INC:= $(addprefix -I, src/ src/exec src/env src/libft src/parser src/lexer src/utils)
  
-INC:= $(addprefix $(INC_DIR)/, minishell.h utils.h)
+HDR:= $(addprefix src/, minishell.h exec/exec.h env/env.h parser/parser.h lexer/lexer.h utils/shell_utils.h)
 
 OBJS:= $(SRCS:.c=.o)
 
 all: $(NAME)
 
-$(NAME): $(HDR) $(INC) $(LFT) $(OBJS)
+$(NAME): $(HDR) $(LFT) $(OBJS)
 	$(CC) $(CFLAGS) $(LIB_FLAGS) $(OBJS) $(LFT) -o $(NAME)
 
 %.o: %.c
-	$(CC) $(CFLAGS) -I$(INC_DIR) -c $< -o $@
+	$(CC) $(CFLAGS) $(INC) -c $< -o $@
 
 lft:
 	$(MAKE) bonus -C $(LFT_DIR)
-	cp $(LFT_DIR)/libft.h $(INC_DIR)
 
 $(LFT): lft
 

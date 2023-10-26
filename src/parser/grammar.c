@@ -6,12 +6,12 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/26 15:16:27 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/24 12:59:23 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/24 20:06:44 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "grammar.h"
-#include "minishell.h"
+#include <minishell.h>
+#include "parser.h"
 
 bool	parse_pipeline_suffix(t_list **curs, t_ppline **pipeline,
 		bool *err_flag)

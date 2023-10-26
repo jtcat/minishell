@@ -6,13 +6,13 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/26 23:14:59 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/24 11:44:32 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/24 20:12:27 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <minishell.h>
 #include "exec.h"
-#include "minishell.h"
-#include "utils.h"
+#include <shell_utils.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>

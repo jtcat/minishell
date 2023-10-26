@@ -6,14 +6,13 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/26 15:18:33 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/23 10:52:21 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/24 20:06:56 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "grammar.h"
-#include "libft.h"
-#include "minishell.h"
-#include "utils.h"
+#include <minishell.h>
+#include "parser.h"
+#include <shell_utils.h>
 #include <stdio.h>
 
 bool	parse_redirect(t_list **cursor, t_cmd *cmd, bool *err_flag)

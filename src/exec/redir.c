@@ -6,13 +6,12 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/27 00:08:00 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/24 11:45:16 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/24 20:13:28 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
-#include "minishell.h"
-#include "utils.h"
+#include <minishell.h>
+#include <shell_utils.h>
 #include "exec.h"
 
 #include <fcntl.h>

@@ -6,15 +6,11 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:29:48 by leborges          #+#    #+#             */
-/*   Updated: 2023/09/26 03:46:58 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/10/24 19:31:23 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
-#include "utils.h"
-#include <stdio.h>
-#include <unistd.h>
-#include <minishell.h>
+#include "lexer.h"
 
 void	store_token(t_list **token_list, char *start, char *end,
 		t_token_type type)

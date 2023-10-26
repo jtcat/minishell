@@ -6,12 +6,12 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/27 00:11:03 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/24 11:46:09 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/24 20:13:00 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "minishell.h"
-#include "utils.h"
+#include <minishell.h>
+#include <shell_utils.h>
 #include "exec.h"
 
 extern int	g_exit_val;

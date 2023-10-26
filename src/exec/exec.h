@@ -6,14 +6,14 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/26 23:37:11 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/23 11:12:09 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/24 19:28:12 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef EXEC_H
 # define EXEC_H
 
-# include "minishell.h"
+# include <minishell.h>
 
 typedef int	(*t_builtin_func)(t_shctx *, char **);
 
@@ -24,4 +24,8 @@ void			resolve_cmd(t_shctx *ctx, char **cmd_path_ref);
 int				resolve_redirs(t_shctx *ctx,
 					t_cmd *cmd, int pipefd[2], int piperfd);
 void			handle_exec_err(t_shctx *ctx, t_cmd *cmd, char **args);
+
+// Executer entry point
+void	exec_cmdlist(t_shctx *ctx, t_list *ppline_lst);
+
 #endif

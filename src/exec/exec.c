@@ -6,13 +6,13 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/13 02:13:40 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/24 13:21:04 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/24 20:11:37 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
-#include "minishell.h"
-#include "utils.h"
+#include <minishell.h>
+#include <shell_utils.h>
+#include <parser.h>
 #include "exec.h"
 
 #include <limits.h>

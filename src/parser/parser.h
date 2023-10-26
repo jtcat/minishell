@@ -1,27 +1,33 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   grammar.h                                          :+:      :+:    :+:   */
+/*   parser.h                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
+/*   By: jcat <joaoteix@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/05/26 15:20:32 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/05/26 15:34:03 by joaoteix         ###   ########.fr       */
+/*   Created: 2023/10/24 19:26:27 by jcat              #+#    #+#             */
+/*   Updated: 2023/10/24 20:05:35 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef GRAMMAR_H
-# define GRAMMAR_H
+#ifndef PARSER_H
+# define PARSER_H
 
 # include <minishell.h>
 # include <unistd.h>
 # include <stdbool.h>
 
+// Parser entry point
+bool	parse_input(t_list *input, t_list **pipe_list);
+
+// Parser utils
+void	read_hd(t_cmd *cmd, t_token *delimtok);
 t_token	*get_token(t_list **cursor);
 bool	test_cursor(t_list **cursor, t_token_type type);
 void	consume_cursor(t_list **cursor);
 bool	synt_err(char errctx[], t_list **cursor, bool	*parser_err_flag);
 void	assign_redirect(t_cmd *cmd, t_token_type red_type, char *filename);
 bool	parse_simple_cmd(t_list **cursor, t_list **pipeline, bool *err_flag);
+
 
 #endif
