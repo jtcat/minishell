@@ -6,10 +6,11 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:28 by leborges          #+#    #+#             */
-/*   Updated: 2023/10/24 20:00:45 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/26 18:16:44 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "dl_list.h"
 #include <stdlib.h>
 #include <minishell.h>
 #include <shell_utils.h>
@@ -61,7 +62,7 @@ void	sctx_destroy(t_shctx *ctx)
 {
 	if (ctx->input)
 		free(ctx->input);
-	free_ptrarr((void **)ctx->envp, free);
+	ft_dlstclear(&ctx->exports, free);
 	ft_lstclear(&ctx->tokens, del_token);
 	ft_lstclear(&ctx->cmd_list, del_pipe);
 	rl_clear_history();
@@ -77,7 +78,7 @@ int	main(int argc, char *argv[], char const *envp[])
 	ctx.input = NULL;
 	ctx.cmd_list = NULL;
 	ctx.tokens = NULL;
-	ctx.envp = dup_envp(&ctx, envp);
+	ctx.exports = dup_envp(&ctx, envp);
 	ctx.cmd_status = 0;
 	ctx.subshell = false;
 	if (argc == 1)

@@ -6,11 +6,12 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/26 23:14:59 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/24 20:12:27 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/26 18:19:18 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <minishell.h>
+#include "env.h"
 #include "exec.h"
 #include <shell_utils.h>
 #include <string.h>
@@ -30,7 +31,7 @@ int	is_reg_file(const char *filename)
 	return (0);
 }
 
-char	**conv_llenvp(size_t envp_len, t_list *envp)
+char	**conv_llenvp(size_t envp_len, t_dlist *envp)
 {
 	char	**new_envp;
 	size_t	i;
@@ -86,7 +87,7 @@ void	resolve_cmd(t_shctx *ctx, char **cmd_path_ref)
 
 	if (ft_strchr(*cmd_path_ref, '/'))
 		return ;
-	path_dirs = ft_split(sctx_getenv(ctx, "PATH"), ':');
+	path_dirs = ft_split(get_var_val(ctx, "PATH"), ':');
 	if (!path_dirs)
 		return ;
 	path_iter = path_dirs;
