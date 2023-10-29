@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/27 00:11:03 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/24 20:13:00 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/26 18:20:01 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ char	*expand_var(t_shctx *ctx, char *cursor, char **expansion)
 {
 	char const	*start = cursor;
 	char		*tmp;
-	t_list		*env_i;
+	t_dlist		*env_i;
 	int			id_len;
 
 	if (*cursor == '?')
@@ -43,7 +43,7 @@ char	*expand_var(t_shctx *ctx, char *cursor, char **expansion)
 	if (cursor == start)
 		return (NULL);
 	id_len = cursor - start;
-	env_i = ctx->envp;
+	env_i = ctx->exports;
 	while (env_i && ft_strncmp(env_i->content, start, id_len) != 0)
 		env_i = env_i->next;
 	if (!env_i)

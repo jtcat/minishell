@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:25 by leborges          #+#    #+#             */
-/*   Updated: 2023/10/24 23:54:33 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/26 18:15:52 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 # include <limits.h>
 # include <stdbool.h>
 # include <libft.h>
+# include <dl_list.h>
 
 # define MSH_CMD_PROMPT "minishell > "
 # define HD_PROMPT "> "
@@ -41,9 +42,8 @@ typedef struct s_token
 typedef struct s_shctx
 {
 	bool			subshell;
-	t_list			*envp;
 	char			*input;
-	t_list			*exports;
+	t_dlist			*exports;
 	size_t			envp_len;
 	t_list			*cmd_list;
 	t_list			*tokens;
@@ -66,6 +66,9 @@ typedef struct s_ppline
 
 // Common
 void	del_cmd(void *content);
+
+// Shell Context
+void	sctx_destroy(t_shctx *ctx);
 
 // Builtins
 int		pwd_cmd(t_shctx *ctx, char **vars);

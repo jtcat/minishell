@@ -6,10 +6,11 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/25 14:22:48 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/25 11:09:55 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/27 02:08:05 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "dl_list.h"
 #include "libft.h"
 #include <errno.h>
 #include <minishell.h>
@@ -48,7 +49,7 @@ void	set_var(t_shctx *ctx, const char *varname, const char *val)
 {
 	char	*newvar;
 	char	*tmp;
-	t_list	*var_ref;
+	t_dlist	*var_ref;
 
 	var_ref = get_var_ref(ctx, varname);
 	tmp = ft_strjoin(varname, "=");
@@ -60,14 +61,14 @@ void	set_var(t_shctx *ctx, const char *varname, const char *val)
 		var_ref->content = newvar;
 	}
 	else
-		ft_lstadd_back(&ctx->envp, ft_lstnew(newvar));
+		ft_dlstadd_back(&ctx->exports, ft_dlstnew(newvar));
 }
 
 int	cd_cmd(t_shctx *ctx, char **args)
 {
 	char	*curpath;
-	char	*pwd = sctx_getenv(ctx, "PWD");
-	char	*home = sctx_getenv(ctx, "HOME");
+	char	*pwd = get_var_val(ctx, "PWD");
+	char	*home = get_var_val(ctx, "HOME");
 
 	if (*(args + 1) != NULL)
 		ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX "cd: too many arguments\n");
@@ -98,12 +99,13 @@ int	pwd_cmd(t_shctx *ctx, char **args)
 
 int	env_cmd(t_shctx *ctx, char **args)
 {
-	t_list	*iter = ctx->envp;
+	t_dlist	*iter = ctx->exports;
 	(void)args;
 
 	while (iter)
 	{
-		ft_dprintf(STDOUT_FILENO, "%s\n", iter->content);
+		if (ft_strchr(iter->content, '='))
+			ft_dprintf(STDOUT_FILENO, "%s\n", iter->content);
 		iter = iter->next;
 	}
 	return (0);
@@ -137,15 +139,35 @@ int	exit_cmd(t_shctx *ctx, char **args)
 	return (ctx->cmd_status);
 }
 
+int	val_var_id(char *var)
+{
+	if (!(ft_isalpha(*var) || *var == '_'))
+		return (0);
+	while (*var && *var != '=' && (ft_isalnum(*var) || *var == '_'))
+		var++;
+	return (*var == '\0' || *var == '=');
+}
+
 // Need to validate ID, failing an assigment does not prevent others
 int	export_vars(t_shctx *ctx, char **vars)
 {
+	t_dlist	*var_ref;
+
 	while (*vars)
 	{
 		if (val_var_id(*vars))
-			set_var(ctx, *vars, get_var_val(ctx, ft_strchr(*vars, '=') + 1));
+		{
+			var_ref = get_var_ref(ctx, *vars);
+			if (!var_ref)
+				ft_dlstadd_back(&ctx->exports, ft_dlstnew(ft_strdup(*vars)));
+			else
+			{
+				free(var_ref->content);
+				var_ref->content = ft_strdup(*vars);
+			}
+		}
 		else
-		 	//print err;
+			ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX "`%s\': not a valid identifier\n", *vars);
 		vars++;
 	}
 	return (0);
@@ -153,16 +175,13 @@ int	export_vars(t_shctx *ctx, char **vars)
 
 int	unset_cmd(t_shctx *ctx, char **var_ids)
 {
-	t_list *var_ref;
+	t_dlist *var_ref;
 	
 	while (*var_ids)
 	{
 		var_ref = get_var_ref(ctx, *var_ids);
 		if (var_ref)
-			ft_dlst_remove(var_ref, free);
-		var_ref = get_export_ref(ctx, *var_ids);
-		if (var_ref)
-			ft_dlst_remove(var_ref, free);
+			ft_dlstrmone(var_ref, free);
 		var_ids++;
 	}
 	return (0);
@@ -173,7 +192,7 @@ int	export_ls_vars(t_shctx *ctx)
 	size_t		i;
 	const char	*lst_pckd;
 	const char	*lrgst_nxt;
-	t_list		*var;
+	t_dlist		*var;
 
 	lst_pckd = NULL;
 	i = 0; 
@@ -189,7 +208,7 @@ int	export_ls_vars(t_shctx *ctx)
 			var = var->next;
 		}
 		if (get_var_val(ctx, lrgst_nxt))
-			ft_dprintf(STDOUT_FILENO, "declare -x %s=\"%s\"\n", lrgst_nxt, get_var_val(ctx, lrgst_nxt));
+			ft_dprintf(STDOUT_FILENO, "declare -x %s=\"%s\"\n", get_var_id(lrgst_nxt), get_var_val(ctx, lrgst_nxt));
 		else
 			ft_dprintf(STDOUT_FILENO, "declare -x %s\n", lrgst_nxt);
 		lst_pckd = lrgst_nxt;
