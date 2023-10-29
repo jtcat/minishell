@@ -1,32 +1,32 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_lstmap.c                                        :+:      :+:    :+:   */
+/*   ft_dlstmap.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jcat </var/spool/mail/jcat>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/06 02:20:45 by jcat              #+#    #+#             */
-/*   Updated: 2022/11/10 16:03:54 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/10/29 16:24:43 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-#include "libft.h"
+#include "dl_list.h"
 #include <stdlib.h>
 
-t_list	*ft_lstmap(t_list *lst, void *(*f)(void *), void (*del)(void *))
+t_dlist	*ft_dlstmap(t_dlist *lst, void *(*f)(void *), void (*del)(void *))
 {
-	t_list	*newlst;
-	t_list	*newlsthead;
+	t_dlist	*newlst;
+	t_dlist	*newlsthead;
 
 	if (!(lst && f && del))
 		return (NULL);
-	newlsthead = ft_lstnew(f(lst->content));
+	newlsthead = ft_dlstnew(f(lst->content));
 	newlst = newlsthead;
 	while (lst->next)
 	{
-		newlst->next = ft_lstnew(f(lst->next->content));
+		newlst->next = ft_dlstnew(f(lst->next->content));
 		if (!newlst)
 		{
-			ft_lstclear(&newlsthead, del);
+			ft_dlstclear(&newlsthead, del);
 			return (NULL);
 		}
 		newlst = newlst->next;

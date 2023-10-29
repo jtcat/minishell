@@ -1,25 +1,27 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_lstsize.c                                       :+:      :+:    :+:   */
+/*   ft_dlstdup.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jcat </var/spool/mail/jcat>                +#+  +:+       +#+        */
+/*   By: joaoteix <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/11/06 01:38:07 by jcat              #+#    #+#             */
-/*   Updated: 2022/11/06 02:08:48 by jcat             ###   ########.fr       */
+/*   Created: 2023/10/29 16:32:57 by joaoteix          #+#    #+#             */
+/*   Updated: 2023/10/29 17:06:55 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-#include "libft.h"
 
-int	ft_lstsize(t_list *lst)
+#include "dl_list.h"
+#include <stdlib.h>
+
+t_dlist	*ft_dlstdup(t_dlist *lst)
 {
-	int	n;
+	t_dlist	*newlst;
 
-	n = 0;
+	newlst = NULL;
 	while (lst)
 	{
-		n++;
+		ft_dlstadd_back(&newlst, ft_dlstnew(lst->content));
 		lst = lst->next;
 	}
-	return (n);
+	return (newlst);
 }

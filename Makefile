@@ -17,7 +17,7 @@ SRCS:= $(addprefix src/, \
 	$(addprefix exec/, exec.c exec2.c expan.c redir.c) \
 	$(addprefix env/, env.c ) \
 	$(addprefix builtins/, builtins.c) \
-	$(addprefix dl_list/, ft_dlstadd_back.c ft_dlstclear.c ft_dlstdelone.c ft_dlstlast.c ft_dlstnew.c ft_dlstrmone.c) \
+	$(addprefix dl_list/, ft_dlstadd_back.c ft_dlstclear.c ft_dlstdelone.c ft_dlstlast.c ft_dlstnew.c ft_dlstrmone.c ft_dlstdup.c) \
 )
 
 INC:= $(addprefix -I, src/ src/exec src/env src/libft src/parser src/lexer src/utils src/dl_list)

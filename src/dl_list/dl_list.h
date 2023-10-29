@@ -6,7 +6,7 @@
 /*   By: jcat <joaoteix@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/26 17:21:55 by jcat              #+#    #+#             */
-/*   Updated: 2023/10/26 17:41:13 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/29 17:19:08 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,8 +23,9 @@ typedef struct	s_dlist
 // Methods
 t_dlist	*ft_dlstnew(void *content);
 t_dlist	*ft_dlstlast(t_dlist *lst);
+t_dlist	*ft_dlstdup(t_dlist *lst);
 void	ft_dlstadd_back(t_dlist **lst, t_dlist *new);
 void	ft_dlstdelone(t_dlist *lst, void (*del)(void *));
-void	ft_dlstrmone(t_dlist *node, void (*del)(void *));
+void	ft_dlstrmone(t_dlist **headref, t_dlist *node, void (*del)(void *));
 void	ft_dlstclear(t_dlist **node, void (*del)(void *));
 #endif
