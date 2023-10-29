@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/27 00:11:03 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/29 18:26:52 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/10/29 18:44:27 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ char	*expand_var(t_shctx *ctx, char *cursor, char **expansion)
 	var_val = get_var_val(ctx, start);
 	if (!var_val)
 		return (cursor);
-	tmp = ft_strjoin(*expansion, ft_strchr(var_val, '=') + 1);
+	tmp = ft_strjoin(*expansion, var_val);
 	free(*expansion);
 	*expansion = tmp;
 	return (cursor);
@@ -83,8 +83,7 @@ char	*expand_word(t_shctx *ctx, char **word_ref)
 			{
 				if (*cursor == '$')
 				{
-					str_cat(&expan,
-						ft_substr(word_start, 0, cursor - word_start - 1));
+					str_cat(&expan,	ft_substr(word_start, 0, cursor - word_start - 1));
 					word_start = expand_var(ctx, cursor + 1, &expan);
 				}
 				cursor++;
@@ -93,7 +92,10 @@ char	*expand_word(t_shctx *ctx, char **word_ref)
 			word_start = cursor + 1;
 		}
 		else if (*cursor == '$')
+		{
+			str_cat(&expan,	ft_substr(word_start, 0, cursor - word_start));
 			word_start = expand_var(ctx, cursor + 1, &expan);
+		}
 		cursor++;
 	}
 	str_cat(&expan, ft_substr(word_start, 0, cursor - word_start));
