@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/25 14:22:48 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/27 02:08:05 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/29 17:19:57 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,12 +45,14 @@ int	echo_cmd(t_shctx *ctx, char **args)
 	return (0);
 }
 
-void	set_var(t_shctx *ctx, const char *varname, const char *val)
+void	set_var(t_shctx *ctx, const char *var, const char *val)
 {
+	char	*varname;
 	char	*newvar;
 	char	*tmp;
 	t_dlist	*var_ref;
 
+	varname = get_var_id(var);
 	var_ref = get_var_ref(ctx, varname);
 	tmp = ft_strjoin(varname, "=");
 	newvar = ft_strjoin(tmp, val);
@@ -62,6 +64,7 @@ void	set_var(t_shctx *ctx, const char *varname, const char *val)
 	}
 	else
 		ft_dlstadd_back(&ctx->exports, ft_dlstnew(newvar));
+	free(varname);
 }
 
 int	cd_cmd(t_shctx *ctx, char **args)
@@ -99,7 +102,7 @@ int	pwd_cmd(t_shctx *ctx, char **args)
 
 int	env_cmd(t_shctx *ctx, char **args)
 {
-	t_dlist	*iter = ctx->exports;
+	t_dlist	*iter = ctx->envp;
 	(void)args;
 
 	while (iter)
@@ -151,20 +154,27 @@ int	val_var_id(char *var)
 // Need to validate ID, failing an assigment does not prevent others
 int	export_vars(t_shctx *ctx, char **vars)
 {
-	t_dlist	*var_ref;
+	t_dlist		*var_ref;
+	const char	*varval;
 
 	while (*vars)
 	{
 		if (val_var_id(*vars))
 		{
-			var_ref = get_var_ref(ctx, *vars);
+			var_ref = get_export_ref(ctx, *vars);
 			if (!var_ref)
-				ft_dlstadd_back(&ctx->exports, ft_dlstnew(ft_strdup(*vars)));
+			{
+				ft_dlstadd_back(&ctx->exports, ft_dlstnew(get_var_id(*vars)));
+				ctx->exports_len++;
+			}
 			else
 			{
 				free(var_ref->content);
-				var_ref->content = ft_strdup(*vars);
+				var_ref->content = get_var_id(*vars);
 			}
+			varval = ft_strchr(*vars, '=');
+			if (varval)
+				set_var(var_ref->content, varval, varval + 1);
 		}
 		else
 			ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX "`%s\': not a valid identifier\n", *vars);
@@ -181,7 +191,16 @@ int	unset_cmd(t_shctx *ctx, char **var_ids)
 	{
 		var_ref = get_var_ref(ctx, *var_ids);
 		if (var_ref)
-			ft_dlstrmone(var_ref, free);
+		{
+			ft_dlstrmone(&ctx->envp, var_ref, free);
+			ctx->envp_len--;
+		}
+		var_ref = get_export_ref(ctx, *var_ids);
+		if (var_ref)
+		{
+			ft_dlstrmone(&ctx->exports, var_ref, free);
+			ctx->exports_len--;
+		}
 		var_ids++;
 	}
 	return (0);
@@ -189,30 +208,26 @@ int	unset_cmd(t_shctx *ctx, char **var_ids)
 
 int	export_ls_vars(t_shctx *ctx)
 {
-	size_t		i;
-	const char	*lst_pckd;
-	const char	*lrgst_nxt;
+	t_dlist		*lrgst;
+	t_dlist		*dup_exp;
 	t_dlist		*var;
 
-	lst_pckd = NULL;
-	i = 0; 
-	while (i < (ctx->envp_len - 1))
+	dup_exp = ft_dlstdup(ctx->exports);
+	while (dup_exp)
 	{
-		var = ctx->exports;
-		lrgst_nxt = NULL;
+		lrgst = NULL;
+		var = dup_exp;
 		while (var)
 		{
-			if ((!lrgst_nxt || ft_strcmp(var->content, lrgst_nxt) < 0)
-				&& (!lst_pckd || (var->content != lst_pckd && ft_strcmp(var->content, lst_pckd) >= 0)))
-				lrgst_nxt = var->content;
+			if (!lrgst || ft_strcmp(var->content, lrgst->content) < 0)
+				lrgst = var;
 			var = var->next;
 		}
-		if (get_var_val(ctx, lrgst_nxt))
-			ft_dprintf(STDOUT_FILENO, "declare -x %s=\"%s\"\n", get_var_id(lrgst_nxt), get_var_val(ctx, lrgst_nxt));
+		if (get_var_val(ctx, lrgst->content))
+			ft_dprintf(STDOUT_FILENO, "declare -x %s=\"%s\"\n", get_var_id(lrgst->content), get_var_val(ctx, lrgst->content));
 		else
-			ft_dprintf(STDOUT_FILENO, "declare -x %s\n", lrgst_nxt);
-		lst_pckd = lrgst_nxt;
-		i++;
+			ft_dprintf(STDOUT_FILENO, "declare -x %s\n", lrgst->content);
+		ft_dlstrmone(&dup_exp, lrgst, NULL);
 	}
 	return (0);
 }

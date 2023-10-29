@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:28 by leborges          #+#    #+#             */
-/*   Updated: 2023/10/26 18:16:44 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/29 14:59:18 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,6 +63,7 @@ void	sctx_destroy(t_shctx *ctx)
 	if (ctx->input)
 		free(ctx->input);
 	ft_dlstclear(&ctx->exports, free);
+	ft_dlstclear(&ctx->envp, free);
 	ft_lstclear(&ctx->tokens, del_token);
 	ft_lstclear(&ctx->cmd_list, del_pipe);
 	rl_clear_history();
@@ -78,9 +79,9 @@ int	main(int argc, char *argv[], char const *envp[])
 	ctx.input = NULL;
 	ctx.cmd_list = NULL;
 	ctx.tokens = NULL;
-	ctx.exports = dup_envp(&ctx, envp);
 	ctx.cmd_status = 0;
 	ctx.subshell = false;
+	init_envp(&ctx, envp);
 	if (argc == 1)
 	{
 		ctx.input = readline(MSH_CMD_PROMPT);

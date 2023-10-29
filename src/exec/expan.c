@@ -6,12 +6,13 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/27 00:11:03 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/26 18:20:01 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/29 15:27:39 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <minishell.h>
 #include <shell_utils.h>
+#include <env.h>
 #include "exec.h"
 
 extern int	g_exit_val;
@@ -26,12 +27,13 @@ void	str_cat(char **dst_ref, char *src)
 	*dst_ref = tmp;
 }
 
+// 'echo $' should result in '$\n'
+// 'echo $+' should result in '$+\n'
 char	*expand_var(t_shctx *ctx, char *cursor, char **expansion)
 {
 	char const	*start = cursor;
 	char		*tmp;
-	t_dlist		*env_i;
-	int			id_len;
+	char		*var_val;
 
 	if (*cursor == '?')
 	{
@@ -41,14 +43,14 @@ char	*expand_var(t_shctx *ctx, char *cursor, char **expansion)
 	while (ft_isalnum(*cursor) || *cursor == '_')
 		(cursor)++;
 	if (cursor == start)
-		return (NULL);
-	id_len = cursor - start;
-	env_i = ctx->exports;
-	while (env_i && ft_strncmp(env_i->content, start, id_len) != 0)
-		env_i = env_i->next;
-	if (!env_i)
+	{
+		*expansion = ft_strdup("$");
 		return (cursor);
-	tmp = ft_strjoin(*expansion, ft_strchr(env_i->content, '=') + 1);
+	}
+	var_val = get_var_val(ctx, start);
+	if (!var_val)
+		return (cursor);
+	tmp = ft_strjoin(*expansion, ft_strchr(var_val, '=') + 1);
 	free(*expansion);
 	*expansion = tmp;
 	return (cursor);
