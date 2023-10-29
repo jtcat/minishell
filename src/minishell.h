@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:25 by leborges          #+#    #+#             */
-/*   Updated: 2023/10/29 16:14:49 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/10/29 20:12:10 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,7 @@ typedef struct s_shctx
 
 typedef struct s_cmd
 {
+	char	*cmdpath;
 	t_list	*args;
 	t_list	*redirs;
 	t_list	*hd_input;

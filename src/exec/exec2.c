@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/26 23:14:59 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/26 18:19:18 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/29 20:10:52 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,9 +47,8 @@ char	**conv_llenvp(size_t envp_len, t_dlist *envp)
 	return (new_envp);
 }
 
-void	handle_exec_err(t_shctx *ctx, t_cmd *cmd, char **args, char **envp)
+void	handle_exec_err(t_shctx *ctx, char **args, char **envp)
 {
-	(void)cmd;
 	if (access(*args, F_OK))
 	{
 		ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX "%s: command not found\n", *args);

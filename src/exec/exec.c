@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/13 02:13:40 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/29 15:53:52 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/10/29 20:12:32 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,7 @@ int	exec_cmd(t_cmd *cmd, t_shctx *ctx, int iofd[2], int piperfd)
 
 	pid = -1;
 	if (cmd->args)
-		expand_word(ctx, (char **)cmd->args->content);
+		cmd->cmdpath = ft_strdup(expand_word(ctx, (char **)cmd->args->content));
 	if (iofd[0] > -1 || iofd[1] > -1 || !get_builtinfunc(cmd))
 		pid = fork();
 	if (pid > 0)
@@ -87,11 +87,11 @@ int	exec_cmd(t_cmd *cmd, t_shctx *ctx, int iofd[2], int piperfd)
 		g_exit_val = exec_builtin(ctx, cmd);
 		return (stop_cmd(ctx, pid));
 	}
-	resolve_cmd(ctx, (char **)cmd->args->content);
+	resolve_cmd(ctx, &cmd->cmdpath);
 	args = expand_args(ctx, cmd);
 	envp = conv_llenvp(ctx->envp_len, ctx->envp);
-	execve(*(char **)cmd->args->content, args, envp);
-	handle_exec_err(ctx, cmd, args, envp);
+	execve(cmd->cmdpath, args, envp);
+	handle_exec_err(ctx, args, envp);
 	return (pid);
 }
 
