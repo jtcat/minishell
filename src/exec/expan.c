@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/27 00:11:03 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/29 15:27:39 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/10/29 18:26:52 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,10 +43,7 @@ char	*expand_var(t_shctx *ctx, char *cursor, char **expansion)
 	while (ft_isalnum(*cursor) || *cursor == '_')
 		(cursor)++;
 	if (cursor == start)
-	{
-		*expansion = ft_strdup("$");
-		return (cursor);
-	}
+		return (cursor - 1);
 	var_val = get_var_val(ctx, start);
 	if (!var_val)
 		return (cursor);
