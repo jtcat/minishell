@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/25 14:22:48 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/29 18:05:13 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/10/30 10:33:36 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -174,7 +174,7 @@ void	export_var(t_shctx *ctx, char *var)
 	}
 	varval = ft_strchr(var, '=');
 	if (varval)
-		set_var(exp_ref->content, varval, varval + 1);
+		set_var(ctx, var, varval + 1);
 }
 
 #define ERR_EXP_INV "`%s\': not a valid identifier\n"
