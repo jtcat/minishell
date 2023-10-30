@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/27 00:11:03 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/30 10:25:56 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/30 11:42:19 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,11 +46,11 @@ char	*expand_var(t_shctx *ctx, char *cursor, char **expansion)
 		return (cursor - 1);
 	var_val = get_var_val(ctx, start);
 	if (!var_val)
-		return (cursor);
+		return (cursor - 1);
 	tmp = ft_strjoin(*expansion, var_val);
 	free(*expansion);
 	*expansion = tmp;
-	return (cursor);
+	return (cursor - 1);
 }
 
 // Word unquoting and parameter expasion.
@@ -83,8 +83,9 @@ char	*expand_word(t_shctx *ctx, char **word_ref)
 			{
 				if (*cursor == '$')
 				{
-					str_cat(&expan,	ft_substr(word_start, 0, cursor - word_start - 1));
-					word_start = expand_var(ctx, cursor + 1, &expan);
+					str_cat(&expan,	ft_substr(word_start, 0, cursor - word_start));
+					cursor = expand_var(ctx, cursor + 1, &expan);
+					word_start = cursor + 1;
 				}
 				cursor++;
 			}
@@ -94,7 +95,8 @@ char	*expand_word(t_shctx *ctx, char **word_ref)
 		else if (*cursor == '$')
 		{
 			str_cat(&expan,	ft_substr(word_start, 0, cursor - word_start));
-			word_start = expand_var(ctx, cursor + 1, &expan);
+			cursor = expand_var(ctx, cursor + 1, &expan);
+			word_start = cursor + 1;
 		}
 		cursor++;
 	}
