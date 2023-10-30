@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:28 by leborges          #+#    #+#             */
-/*   Updated: 2023/10/29 19:50:43 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/10/30 10:27:18 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,8 +46,8 @@ void	del_cmd(void *content)
 		ft_lstclear(&cmd->hd_input, free);
 	if (cmd->redirs)
 		ft_lstclear(&cmd->redirs, do_nothing);
-	if (cmd->cmdname)
-		free(cmd->cmdname);
+	if (cmd->cmdpath)
+		free(cmd->cmdpath);
 	free(cmd);
 }
 
