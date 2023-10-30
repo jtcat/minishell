@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/26 23:37:11 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/29 20:11:15 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/10/30 12:59:37 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,5 @@ void			handle_exec_err(t_shctx *ctx, char **args, char **envp);
 char			**conv_llenvp(size_t envp_len, t_dlist *envp);
 
 // Executer entry point
-void	exec_cmdlist(t_shctx *ctx, t_list *ppline_lst);
-
+void			exec_cmdlist(t_shctx *ctx, t_list *ppline_lst);
 #endif

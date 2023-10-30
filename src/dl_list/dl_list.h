@@ -6,19 +6,19 @@
 /*   By: jcat <joaoteix@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/26 17:21:55 by jcat              #+#    #+#             */
-/*   Updated: 2023/10/29 17:19:08 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/10/30 12:55:41 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef DL_LST_H
-# define DL_LST_H
+#ifndef DL_LIST_H
+# define DL_LIST_H
 
-typedef struct	s_dlist
+typedef struct s_dlist
 {
 	void			*content;
 	struct s_dlist	*next;
 	struct s_dlist	*prev;
-} t_dlist;
+}	t_dlist;
 
 // Methods
 t_dlist	*ft_dlstnew(void *content);

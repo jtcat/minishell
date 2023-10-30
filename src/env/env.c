@@ -6,7 +6,7 @@
 /*   By: jcat <joaoteix@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/24 18:39:36 by jcat              #+#    #+#             */
-/*   Updated: 2023/10/30 11:40:25 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/30 12:59:08 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,11 +25,14 @@ char	*get_var_id(char const *var)
 
 t_dlist	*get_var_ref(t_shctx *ctx, char const *var)
 {
-	t_dlist		*env_i;
-	char		*varname = get_var_id(var);
+	t_dlist	*env_i;
+	char	*varname;
+	size_t	namelen;
 
+	varname = get_var_id(var);
+	namelen = ft_strlen(varname);
 	env_i = ctx->envp;
-	while (env_i && ft_strncmp(env_i->content, varname, ft_strlen(varname)) != 0)
+	while (env_i && ft_strncmp(env_i->content, varname, namelen) != 0)
 		env_i = env_i->next;
 	free(varname);
 	return (env_i);
@@ -65,8 +68,10 @@ void	init_envp(t_shctx *ctx, char const *envp[])
 	ctx->envp_len = 0;
 	while (envp[ctx->envp_len])
 	{
-		ft_dlstadd_back(&ctx->envp, ft_dlstnew(ft_strdup(envp[ctx->envp_len])));
-		ft_dlstadd_back(&ctx->exports, ft_dlstnew(get_var_id(envp[ctx->envp_len++])));
+		ft_dlstadd_back(&ctx->envp,
+			ft_dlstnew(ft_strdup(envp[ctx->envp_len])));
+		ft_dlstadd_back(&ctx->exports,
+			ft_dlstnew(get_var_id(envp[ctx->envp_len++])));
 	}
 	ctx->exports_len = ctx->envp_len;
 }

@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/27 00:11:03 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/30 11:47:18 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/30 13:00:33 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,7 +82,7 @@ char	*expand_word(t_shctx *ctx, char **word_ref)
 			{
 				if (*cursor == '$')
 				{
-					str_cat(&expan,	ft_substr(word_start, 0, cursor - word_start));
+					str_cat(&expan, ft_substr(word_start, 0, cursor - word_start));
 					cursor = expand_var(ctx, cursor + 1, &expan);
 					word_start = cursor + 1;
 				}
@@ -92,7 +92,7 @@ char	*expand_word(t_shctx *ctx, char **word_ref)
 		}
 		else if (*cursor == '$')
 		{
-			str_cat(&expan,	ft_substr(word_start, 0, cursor - word_start));
+			str_cat(&expan, ft_substr(word_start, 0, cursor - word_start));
 			cursor = expand_var(ctx, cursor + 1, &expan);
 			word_start = cursor + 1;
 		}

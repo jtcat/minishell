@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/26 23:14:59 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/29 20:10:52 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/10/30 13:37:07 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,17 +93,17 @@ void	resolve_cmd(t_shctx *ctx, char **cmd_path_ref)
 	cmd_suffix = ft_strjoin("/", *cmd_path_ref);
 	while (*path_iter)
 	{
-		tmp_path = ft_strjoin(*(path_iter++), cmd_suffix);
+		tmp_path = ft_strjoin(*(path_iter), cmd_suffix);
+		free(*(path_iter++));
 		if (is_reg_file(tmp_path))
 		{
-			free(cmd_suffix);
 			*cmd_path_ref = tmp_path;
-			return ;
+			break ;
 		}
 		free(tmp_path);
 	}	
 	free(cmd_suffix);
-	free_ptrarr((void **)path_dirs, free);
+	free(path_dirs);
 }
 
 t_builtin_func	get_builtinfunc(t_cmd *cmd)

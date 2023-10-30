@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/26 15:16:27 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/24 20:06:44 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/30 13:14:42 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,8 @@ bool	parse_pipeline_suffix(t_list **curs, t_ppline **pipeline,
 	return (true);
 }
 
-bool	parse_pipeline(t_list **cursor, t_list **pipe_list, bool *err_flag, t_token_type op)
+bool	parse_pipeline(t_list **cursor,
+		t_list **pipe_list, bool *err_flag, t_token_type op)
 {
 	t_ppline	*pipeline;
 
