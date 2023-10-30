@@ -6,7 +6,7 @@
 /*   By: jcat <joaoteix@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/24 18:39:36 by jcat              #+#    #+#             */
-/*   Updated: 2023/10/29 17:37:47 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/10/30 11:40:25 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,11 +15,12 @@
 
 char	*get_var_id(char const *var)
 {
-	char const	*val = ft_strchr(var, '=');
+	size_t	len;
 
-	if (!val)
-		return ft_strdup(var);
-	return (ft_substr(var, 0, val - var));
+	len = 0;
+	while (ft_isalnum(var[len]) || var[len] == '_')
+		len++;
+	return (ft_substr(var, 0, len));
 }
 
 t_dlist	*get_var_ref(t_shctx *ctx, char const *var)
