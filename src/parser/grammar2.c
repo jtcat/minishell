@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/26 15:18:33 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/24 20:06:56 by jcat             ###   ########.fr       */
+/*   Updated: 2023/11/01 18:30:31 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ bool	parse_redirect(t_list **cursor, t_cmd *cmd, bool *err_flag)
 	return (true);
 }
 
-bool	parse_cmd_prefix(t_list **cursor, t_cmd *cmd, bool	*err_flag)
+bool	parse_cmd_prefix(t_list **cursor, t_cmd *cmd, bool *err_flag)
 {
 	if (!parse_redirect(cursor, cmd, err_flag))
 		return (false);
