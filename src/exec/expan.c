@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/27 00:11:03 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/30 13:00:33 by jcat             ###   ########.fr       */
+/*   Updated: 2023/10/30 14:46:22 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@ char	*expand_var(t_shctx *ctx, char *cursor, char **expansion)
 	if (*cursor == '?')
 	{
 		*expansion = ft_itoa(g_exit_val);
-		return (cursor + 1);
+		return (cursor);
 	}
 	while (ft_isalnum(*cursor) || *cursor == '_')
 		(cursor)++;
