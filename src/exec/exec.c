@@ -6,13 +6,14 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/13 02:13:40 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/29 20:12:32 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/11/01 17:00:20 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <minishell.h>
 #include <shell_utils.h>
 #include <parser.h>
+#include <sig.h>
 #include "exec.h"
 
 #include <limits.h>
@@ -28,20 +29,10 @@ int	exec_builtin(t_shctx *ctx, t_cmd *cmd)
 	char		**args;
 	int			(*builtin_func)(t_shctx *, char **);
 	int			cmd_ret;
-	int			std_fds[2];
 
 	builtin_func = get_builtinfunc(cmd);
 	args = expand_args(ctx, cmd);
-	if (ft_strcmp(*(char **)cmd->args->content, "exit"))
-	{
-		std_fds[1] = dup(STDOUT_FILENO);
-		std_fds[0] = dup(STDIN_FILENO);
-	}
 	cmd_ret = builtin_func(ctx, args + 1);
-	dup2(std_fds[1], STDOUT_FILENO);
-	close(std_fds[1]);
-	dup2(std_fds[0], STDOUT_FILENO);
-	close(std_fds[0]);
 	free(args);
 	return (cmd_ret);
 }
@@ -52,6 +43,20 @@ int	stop_cmd(t_shctx *ctx, int pid)
 		return (pid);
 	sctx_destroy(ctx);
 	exit(g_exit_val);
+}
+
+void	save_io(pid_t std_fds[2])
+{
+	std_fds[1] = dup(STDOUT_FILENO);
+	std_fds[0] = dup(STDIN_FILENO);
+}
+
+void	restore_io(pid_t std_fds[2])
+{
+	dup2(std_fds[1], STDOUT_FILENO);
+	close(std_fds[1]);
+	dup2(std_fds[0], STDIN_FILENO);
+	close(std_fds[0]);
 }
 
 // Argument expansion is messy right now.
@@ -71,6 +76,7 @@ int	exec_cmd(t_cmd *cmd, t_shctx *ctx, int iofd[2], int piperfd)
 	char	**args;
 	char	**envp;
 	int		pid;
+	pid_t	std_fds[2];
 
 	pid = -1;
 	if (cmd->args)
@@ -80,11 +86,13 @@ int	exec_cmd(t_cmd *cmd, t_shctx *ctx, int iofd[2], int piperfd)
 	if (pid > 0)
 		return (pid);
 	ctx->subshell = pid == 0;
+	save_io(std_fds);
 	if (!resolve_redirs(ctx, cmd, iofd, piperfd) || !cmd->args)
 		return (stop_cmd(ctx, pid));
 	if (get_builtinfunc(cmd))
 	{
 		g_exit_val = exec_builtin(ctx, cmd);
+		restore_io(std_fds);
 		return (stop_cmd(ctx, pid));
 	}
 	resolve_cmd(ctx, &cmd->cmdpath);
@@ -93,6 +101,19 @@ int	exec_cmd(t_cmd *cmd, t_shctx *ctx, int iofd[2], int piperfd)
 	execve(cmd->cmdpath, args, envp);
 	handle_exec_err(ctx, args, envp);
 	return (pid);
+}
+
+void	waitexec(pid_t last_pid)
+{	
+	waitpid(last_pid, &g_exit_val, 0);
+	if (last_pid == -1)
+		return ;
+	if (WIFEXITED(g_exit_val))
+		g_exit_val = WEXITSTATUS(g_exit_val);
+	else if (WIFSIGNALED(g_exit_val))
+		g_exit_val = (unsigned char)(128 + WTERMSIG(g_exit_val));
+	while (wait(NULL) > 0)
+		;
 }
 
 // Simple builtins (ones that don't fork) might
@@ -107,11 +128,12 @@ int	exec_cmd(t_cmd *cmd, t_shctx *ctx, int iofd[2], int piperfd)
 // during redirection
 void	exec_pipeline(t_shctx *ctx, t_list *cmd_lst)
 {
-	int	pipe_fd[2];
-	int	tmp_fd;
-	int	last_pid;
+	int		pipe_fd[2];
+	int		tmp_fd;
+	pid_t	last_pid;
 
 	tmp_fd = -1;
+	bind_exec_sigs();
 	while (cmd_lst)
 	{
 		pipe_fd[0] = -1;
@@ -129,15 +151,8 @@ void	exec_pipeline(t_shctx *ctx, t_list *cmd_lst)
 		tmp_fd = dup(pipe_fd[0]);
 		close(pipe_fd[0]);
 	}
-	waitpid(last_pid, &g_exit_val, 0);
-	if (last_pid == -1)
-		return ;
-	if (WIFEXITED(g_exit_val))
-		g_exit_val = WEXITSTATUS(g_exit_val);
-	else if (WIFSIGNALED(g_exit_val))
-		g_exit_val = (unsigned char)(128 + WTERMSIG(g_exit_val));
-	while (wait(NULL) > 0)
-		;
+	waitexec(last_pid);
+	bind_interact_sigs();
 }
 
 void	exec_cmdlist(t_shctx *ctx, t_list *ppline_lst)

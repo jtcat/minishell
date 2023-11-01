@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:28 by leborges          #+#    #+#             */
-/*   Updated: 2023/10/30 10:27:18 by jcat             ###   ########.fr       */
+/*   Updated: 2023/11/01 16:36:52 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 #include <parser.h>
 #include <lexer.h>
 #include <env.h>
+#include <sig.h>
 #include <stdio.h>
 #include <readline/readline.h>
 #include <readline/history.h>
@@ -83,6 +84,7 @@ int	main(int argc, char *argv[], char const *envp[])
 	ctx.tokens = NULL;
 	ctx.cmd_status = 0;
 	ctx.subshell = false;
+	bind_interact_sigs();
 	init_envp(&ctx, envp);
 	if (argc == 1)
 	{
