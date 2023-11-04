@@ -1,19 +1,20 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   hd_doc.c                                           :+:      :+:    :+:   */
+/*   hdoc.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: joaoteix <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 17:30:59 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/11/01 18:31:29 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/11/02 10:06:16 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-// Returns read fd to buffer containing here_doc input
-// Should be closed when used
-// If delim is unquoted, 
+#include <minishell.h>
+#include <unistd.h>
 
+// Returns read fd to buffer containing here_doc input
+// TODO: Handle case where here_doc is terminated by EOF
 void	exec_hd(t_cmd *cmd, t_token *delim)
 {
 	pid_t	pid;

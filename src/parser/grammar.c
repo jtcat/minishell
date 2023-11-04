@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/26 15:16:27 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/30 13:14:42 by jcat             ###   ########.fr       */
+/*   Updated: 2023/11/02 10:14:34 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,12 +25,12 @@ bool	parse_pipeline_suffix(t_list **curs, t_ppline **pipeline,
 }
 
 bool	parse_pipeline(t_list **cursor,
-		t_list **pipe_list, bool *err_flag, t_token_type op)
+		t_list **pipe_list, bool *err_flag)
 {
 	t_ppline	*pipeline;
 
 	pipeline = ft_calloc(1, sizeof(t_ppline));
-	pipeline->op = op;
+	pipeline->op = lst_no_op;
 	if (!parse_simple_cmd(cursor, &pipeline->cmds, err_flag))
 		return (false);
 	while (parse_pipeline_suffix(cursor, &pipeline, err_flag))
@@ -47,14 +47,15 @@ bool	parse_list_suffix(t_list **cursor, t_list **pipe_list, bool	*err_flag)
 		return (false);
 	op = get_token(cursor)->type;
 	consume_cursor(cursor);
-	if (!parse_pipeline(cursor, pipe_list, err_flag, op))
+	if (!parse_pipeline(cursor, pipe_list, err_flag))
 		return (synt_err("list_suffix_err", cursor, err_flag));
+	((t_ppline *)(*pipe_list)->content)->op = op;
 	return (true);
 }
 
 bool	parse_list(t_list **cursor, t_list **pipe_list, bool *err_flag)
 {
-	if (!parse_pipeline(cursor, pipe_list, err_flag, lst_no_op))
+	if (!parse_pipeline(cursor, pipe_list, err_flag))
 		return (false);
 	while (parse_list_suffix(cursor, pipe_list, err_flag))
 		;

@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/13 02:13:40 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/11/01 17:00:20 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/11/03 13:03:50 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,7 +76,6 @@ int	exec_cmd(t_cmd *cmd, t_shctx *ctx, int iofd[2], int piperfd)
 	char	**args;
 	char	**envp;
 	int		pid;
-	pid_t	std_fds[2];
 
 	pid = -1;
 	if (cmd->args)
@@ -86,13 +85,11 @@ int	exec_cmd(t_cmd *cmd, t_shctx *ctx, int iofd[2], int piperfd)
 	if (pid > 0)
 		return (pid);
 	ctx->subshell = pid == 0;
-	save_io(std_fds);
 	if (!resolve_redirs(ctx, cmd, iofd, piperfd) || !cmd->args)
 		return (stop_cmd(ctx, pid));
 	if (get_builtinfunc(cmd))
 	{
 		g_exit_val = exec_builtin(ctx, cmd);
-		restore_io(std_fds);
 		return (stop_cmd(ctx, pid));
 	}
 	resolve_cmd(ctx, &cmd->cmdpath);
@@ -131,17 +128,19 @@ void	exec_pipeline(t_shctx *ctx, t_list *cmd_lst)
 	int		pipe_fd[2];
 	int		tmp_fd;
 	pid_t	last_pid;
+	pid_t	std_fds[2];
 
 	tmp_fd = -1;
-	bind_exec_sigs();
 	while (cmd_lst)
 	{
 		pipe_fd[0] = -1;
 		pipe_fd[1] = -1;
 		if (cmd_lst->next)
 			pipe(pipe_fd);
+		save_io(std_fds);
 		last_pid = exec_cmd((t_cmd *)(cmd_lst->content), ctx,
 				(int [2]){pipe_fd[1], tmp_fd}, pipe_fd[0]);
+		restore_io(std_fds);
 		if (tmp_fd > -1)
 			close(tmp_fd);
 		cmd_lst = cmd_lst->next;
@@ -152,13 +151,13 @@ void	exec_pipeline(t_shctx *ctx, t_list *cmd_lst)
 		close(pipe_fd[0]);
 	}
 	waitexec(last_pid);
-	bind_interact_sigs();
 }
 
 void	exec_cmdlist(t_shctx *ctx, t_list *ppline_lst)
 {
 	t_ppline	*ppline;
 
+	bind_exec_sigs();
 	while (ppline_lst)
 	{
 		ppline = ((t_ppline *)(ppline_lst->content));
@@ -168,4 +167,5 @@ void	exec_cmdlist(t_shctx *ctx, t_list *ppline_lst)
 			exec_pipeline(ctx, ppline->cmds);
 		ppline_lst = ppline_lst->next;
 	}
+	bind_interact_sigs();
 }
