@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/27 00:08:00 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/26 18:20:38 by jcat             ###   ########.fr       */
+/*   Updated: 2023/11/04 19:54:01 by ledos-sa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include <parser.h>
 #include "exec.h"
 
+#include <readline/readline.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <string.h>
@@ -76,19 +77,23 @@ void	pipe_redir(int iofd[2], int piperfd)
 void	redir_hd(t_shctx *ctx, t_cmd *cmd)
 {
 	int		pipe_fd[2];
-	t_list	*iter;
+	char	*line;
 
 	pipe(pipe_fd);
-	iter = cmd->hd_input;
-	while (iter)
+	dup2(cmd->hd_fd, STDIN_FILENO);
+	line = readline(NULL);
+	while (line)
 	{
-		expand_word(ctx, (char **)&iter->content);
-		ft_putstr_fd(iter->content, pipe_fd[1]);
+		expand_word(ctx, &line);
+		ft_putstr_fd(line, pipe_fd[1]);
 		ft_putchar_fd('\n', pipe_fd[1]);
-		iter = iter->next;
+		free(line);
+		line = readline(NULL);
 	}
+	close(cmd->hd_fd);
 	close(pipe_fd[1]);
 	dup2(pipe_fd[0], STDIN_FILENO);
+	close(pipe_fd[0]);
 }
 
 int	resolve_redirs(t_shctx *ctx, t_cmd *cmd, int pipefd[2], int piperfd)

@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:28 by leborges          #+#    #+#             */
-/*   Updated: 2023/11/01 16:36:52 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/11/04 18:48:01 by ledos-sa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,8 +43,6 @@ void	del_cmd(void *content)
 
 	cmd = (t_cmd *)content;
 	ft_lstclear(&cmd->args, do_nothing);
-	if (cmd->hd_input)
-		ft_lstclear(&cmd->hd_input, free);
 	if (cmd->redirs)
 		ft_lstclear(&cmd->redirs, do_nothing);
 	if (cmd->cmdpath)
@@ -94,7 +92,7 @@ int	main(int argc, char *argv[], char const *envp[])
 			if (!is_blank_str(ctx.input))
 			{
 				ctx.tokens = split_tokens(ctx.input);
-				if (parse_input(ctx.tokens, &ctx.cmd_list))
+				if (parse_input(&ctx, ctx.tokens, &ctx.cmd_list))
 					exec_cmdlist(&ctx, ctx.cmd_list);
 				ft_lstclear(&ctx.tokens, del_token);
 				ft_lstclear(&ctx.cmd_list, del_pipe);

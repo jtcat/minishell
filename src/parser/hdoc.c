@@ -6,38 +6,20 @@
 /*   By: joaoteix <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 17:30:59 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/11/02 10:06:16 by jcat             ###   ########.fr       */
+/*   Updated: 2023/11/04 20:15:36 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <minishell.h>
+#include <sys/wait.h>
+#include <readline/readline.h>
 #include <unistd.h>
 
-// Returns read fd to buffer containing here_doc input
-// TODO: Handle case where here_doc is terminated by EOF
-void	exec_hd(t_cmd *cmd, t_token *delim)
-{
-	pid_t	pid;
-	int		pipefd[2];
-
-	pipe(pipefd);
-	close(pipefd
-	pid = fork();
-	if (pid == 0)
-	{
-		read_hd(delim->string, pipefd);
-		exit_shell();
-	}
-	
-}
-
-void	read_hd(char *delim, t_pid pipefd[2])
+void	read_hd(char *delim, pid_t pipefd[2])
 {
 	char		*line;
 
-	close(pipefd[1]);
-//	if (cmd->hd_input != NULL)
-//		ft_lstclear(&cmd->hd_input, free);
+	close(pipefd[0]);
 	line = readline(HD_PROMPT);
 	while (line)
 	{
@@ -47,9 +29,29 @@ void	read_hd(char *delim, t_pid pipefd[2])
 			break ;
 		}
 		ft_putstr_fd(line, pipefd[1]);
-		//ft_lstadd_back(&cmd->hd_input, ft_lstnew(line));
+		ft_putchar_fd('\n', pipefd[1]);
+		free(line);
 		line = readline(HD_PROMPT);
 	}
 	close(pipefd[1]);
-	//ft_lstadd_back(&cmd->redirs, ft_lstnew(delimtok));
+}
+
+// Returns read fd to buffer containing here_doc input
+// TODO: Handle case where here_doc is terminated by EOF
+void	exec_hd(t_shctx *ctx, t_cmd *cmd, t_token *delim)
+{
+	pid_t	pid;
+	int		pipefd[2];
+
+	pipe(pipefd);
+	pid = fork();
+	if (pid == 0)
+	{
+		read_hd(delim->str, pipefd);
+		sctx_destroy(ctx);
+		exit(0);
+	}
+	close(pipefd[1]);
+	cmd->hd_fd = pipefd[0];
+	waitpid(pid, NULL, 0);
 }
