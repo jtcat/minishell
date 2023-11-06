@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/27 00:08:00 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/11/04 19:54:01 by ledos-sa         ###   ########.fr       */
+/*   Updated: 2023/11/06 13:08:50 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include <parser.h>
 #include "exec.h"
 
-#include <readline/readline.h>
+#include <gnl.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <string.h>
@@ -35,7 +35,7 @@ int	file_redir(t_shctx *ctx, char **fname_ref, int red_type)
 
 	if (!ft_strcmp(exp_filename, ""))
 	{
-		ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX "ambiguous expansion");
+		ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX "ambiguous redirect\n");
 		return (-1);
 	}
 	redir_to = open(exp_filename,
@@ -80,15 +80,14 @@ void	redir_hd(t_shctx *ctx, t_cmd *cmd)
 	char	*line;
 
 	pipe(pipe_fd);
-	dup2(cmd->hd_fd, STDIN_FILENO);
-	line = readline(NULL);
+	line = get_next_line(cmd->hd_fd);
 	while (line)
 	{
 		expand_word(ctx, &line);
 		ft_putstr_fd(line, pipe_fd[1]);
 		ft_putchar_fd('\n', pipe_fd[1]);
 		free(line);
-		line = readline(NULL);
+		line = get_next_line(cmd->hd_fd);
 	}
 	close(cmd->hd_fd);
 	close(pipe_fd[1]);
