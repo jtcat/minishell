@@ -6,7 +6,7 @@
 /*   By: jcat <joaoteix@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/24 19:26:27 by jcat              #+#    #+#             */
-/*   Updated: 2023/11/04 18:44:44 by ledos-sa         ###   ########.fr       */
+/*   Updated: 2023/11/06 17:05:09 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,6 @@
 bool	parse_input(t_shctx *ctx, t_list *input, t_list **pipe_list);
 
 // Parser utils
-void	exec_hd(t_shctx *ctx, t_cmd *cmd, t_token *delimtok);
 t_token	*get_token(t_list **cursor);
 bool	test_cursor(t_list **cursor, t_token_type type);
 void	consume_cursor(t_list **cursor);

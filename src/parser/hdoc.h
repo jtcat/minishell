@@ -6,11 +6,11 @@
 /*   By: joaoteix <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/04 18:46:37 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/11/04 18:47:23 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/11/06 17:05:01 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef HDOC_H
 # define HDOC_H
-void	exec_hd(t_shctx *ctx, t_cmd *cmd, t_token *delim);
+int	exec_hd(t_shctx *ctx, t_cmd *cmd, char *delim);
 #endif

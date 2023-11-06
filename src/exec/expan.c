@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/27 00:11:03 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/30 14:46:22 by jcat             ###   ########.fr       */
+/*   Updated: 2023/11/06 18:53:55 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,17 +37,22 @@ char	*expand_var(t_shctx *ctx, char *cursor, char **expansion)
 
 	if (*cursor == '?')
 	{
-		*expansion = ft_itoa(g_exit_val);
-		return (cursor);
+		var_val = ft_itoa(g_exit_val);
+		cursor++;
 	}
-	while (ft_isalnum(*cursor) || *cursor == '_')
-		(cursor)++;
-	if (cursor == start)
-		return (cursor - 1);
-	var_val = get_var_val(ctx, start);
-	if (!var_val)
-		return (cursor - 1);
+	else
+	{
+		while (ft_isalnum(*cursor) || *cursor == '_')
+			(cursor)++;
+		if (cursor == start)
+			return (cursor - 1);
+		var_val = get_var_val(ctx, start);
+		if (!var_val)
+			return (cursor - 1);
+	}
 	tmp = ft_strjoin(*expansion, var_val);
+	if (*(cursor - 1) == '?')
+		free(var_val);
 	free(*expansion);
 	*expansion = tmp;
 	return (cursor - 1);

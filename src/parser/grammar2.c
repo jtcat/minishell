@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/26 15:18:33 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/11/04 19:43:10 by ledos-sa         ###   ########.fr       */
+/*   Updated: 2023/11/06 17:08:03 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ bool	parse_redirect(t_shctx *ctx, t_list **cursor, t_cmd *cmd, bool *err_flag)
 {
 	t_token_type	red_type;
 
+	(void)ctx;
 	if (!(test_cursor(cursor, red_in)
 			|| test_cursor(cursor, red_out)
 			|| test_cursor(cursor, red_out_ap)
@@ -29,8 +30,11 @@ bool	parse_redirect(t_shctx *ctx, t_list **cursor, t_cmd *cmd, bool *err_flag)
 	consume_cursor(cursor);
 	if (!test_cursor(cursor, word))
 		return (synt_err("redirect_err", cursor, err_flag));
-	if (red_type == here_doc)
-		exec_hd(ctx, cmd, get_token(cursor));
+	if (red_type == here_doc && exec_hd(ctx, cmd, get_token(cursor)->str) != 0)
+	{
+		*err_flag = true;
+		return (synt_err(NULL, cursor, err_flag));
+	}
 	ft_lstadd_back(&cmd->redirs, ft_lstnew(get_token(cursor)));
 	get_token(cursor)->type = red_type;
 	consume_cursor(cursor);
@@ -70,6 +74,7 @@ bool	parse_simple_cmd(t_shctx *ctx, t_list **cursor, t_list **pipeline, bool *er
 	t_cmd	*cmd;
 
 	cmd = ft_calloc(1, sizeof(t_cmd));
+	cmd->hd_fd = -1;
 	if (parse_cmd_prefix(ctx, cursor, cmd, err_flag))
 	{
 		if (test_cursor(cursor, word))
