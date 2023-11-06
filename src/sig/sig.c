@@ -6,13 +6,13 @@
 /*   By: joaoteix <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:36:00 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/11/06 15:54:04 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/11/06 19:01:01 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "sig.h"
 
-extern int g_exit_val;
+extern int	g_exit_val;
 
 void	handle_interact_int(int sig)
 {

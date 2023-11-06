@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/26 15:16:27 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/11/04 18:43:00 by ledos-sa         ###   ########.fr       */
+/*   Updated: 2023/11/06 19:00:28 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,8 @@ bool	parse_pipeline(t_shctx *ctx, t_list **cursor,
 	return (true);
 }
 
-bool	parse_list_suffix(t_shctx *ctx, t_list **cursor, t_list **pipe_list, bool	*err_flag)
+bool	parse_list_suffix(t_shctx *ctx, t_list **cursor, \
+		t_list **pipe_list, bool	*err_flag)
 {
 	t_token_type	op;
 
@@ -53,7 +54,8 @@ bool	parse_list_suffix(t_shctx *ctx, t_list **cursor, t_list **pipe_list, bool	*
 	return (true);
 }
 
-bool	parse_list(t_shctx *ctx, t_list **cursor, t_list **pipe_list, bool *err_flag)
+bool	parse_list(t_shctx *ctx, t_list **cursor, \
+		t_list **pipe_list, bool *err_flag)
 {
 	if (!parse_pipeline(ctx, cursor, pipe_list, err_flag))
 		return (false);

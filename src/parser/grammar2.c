@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/26 15:18:33 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/11/06 17:08:03 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/11/06 18:59:52 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,8 @@
 #include "hdoc.h"
 #include <stdio.h>
 
-bool	parse_redirect(t_shctx *ctx, t_list **cursor, t_cmd *cmd, bool *err_flag)
+bool	parse_redirect(t_shctx *ctx, t_list **cursor, \
+		t_cmd *cmd, bool *err_flag)
 {
 	t_token_type	red_type;
 
@@ -41,7 +42,8 @@ bool	parse_redirect(t_shctx *ctx, t_list **cursor, t_cmd *cmd, bool *err_flag)
 	return (true);
 }
 
-bool	parse_cmd_prefix(t_shctx *ctx, t_list **cursor, t_cmd *cmd, bool *err_flag)
+bool	parse_cmd_prefix(t_shctx *ctx, t_list **cursor, \
+		t_cmd *cmd, bool *err_flag)
 {
 	if (!parse_redirect(ctx, cursor, cmd, err_flag))
 		return (false);
@@ -57,19 +59,23 @@ void	add_cmd_arg(t_list **cursor, t_cmd *cmd)
 	consume_cursor(cursor);
 }
 
-bool	parse_cmd_suffix(t_shctx *ctx, t_list	**cursor, t_cmd *cmd, bool *err_flag)
+bool	parse_cmd_suffix(t_shctx *ctx, t_list **cursor, \
+		t_cmd *cmd, bool *err_flag)
 {
-	if (!parse_redirect(ctx, cursor, cmd, err_flag) && !test_cursor(cursor, word))
+	if (!parse_redirect(ctx, cursor, cmd, err_flag) \
+			&& !test_cursor(cursor, word))
 		return (false);
 	if (test_cursor(cursor, word))
 		add_cmd_arg(cursor, cmd);
-	while (parse_redirect(ctx, cursor, cmd, err_flag) || test_cursor(cursor, word))
+	while (parse_redirect(ctx, cursor, cmd, err_flag) \
+			|| test_cursor(cursor, word))
 		if (test_cursor(cursor, word))
 			add_cmd_arg(cursor, cmd);
 	return (true);
 }
 
-bool	parse_simple_cmd(t_shctx *ctx, t_list **cursor, t_list **pipeline, bool *err_flag)
+bool	parse_simple_cmd(t_shctx *ctx, t_list **cursor, \
+		t_list **pipeline, bool *err_flag)
 {
 	t_cmd	*cmd;
 

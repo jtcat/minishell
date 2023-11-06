@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/26 23:14:59 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/30 13:37:07 by jcat             ###   ########.fr       */
+/*   Updated: 2023/11/06 19:02:22 by ledos-sa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,7 +101,7 @@ void	resolve_cmd(t_shctx *ctx, char **cmd_path_ref)
 			break ;
 		}
 		free(tmp_path);
-	}	
+	}
 	free(cmd_suffix);
 	free(path_dirs);
 }

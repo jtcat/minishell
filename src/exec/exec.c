@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/13 02:13:40 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/11/03 13:03:50 by jcat             ###   ########.fr       */
+/*   Updated: 2023/11/06 19:02:38 by ledos-sa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,7 +101,7 @@ int	exec_cmd(t_cmd *cmd, t_shctx *ctx, int iofd[2], int piperfd)
 }
 
 void	waitexec(pid_t last_pid)
-{	
+{
 	waitpid(last_pid, &g_exit_val, 0);
 	if (last_pid == -1)
 		return ;

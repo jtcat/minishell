@@ -6,7 +6,7 @@
 /*   By: joaoteix <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/20 13:25:57 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/11/06 13:04:24 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/11/06 18:57:22 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,8 +83,8 @@ char	*get_next_line(int fd)
 	{
 		if (buff->head == buff->len)
 			readtobuff(fd, buff);
-		buff->head += parse_buff(buff->data + buff->head, buff->data\
-			   	+ buff->len, &line, &linelen);
+		buff->head += parse_buff(buff->data + buff->head, buff->data \
+			+ buff->len, &line, &linelen);
 	}
 	if (buff->len == 0)
 		clearbuff(fd, bufflist);
