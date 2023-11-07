@@ -6,7 +6,7 @@
 /*   By: jcat <joaoteix@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/24 18:39:36 by jcat              #+#    #+#             */
-/*   Updated: 2023/10/30 12:59:08 by jcat             ###   ########.fr       */
+/*   Updated: 2023/11/07 16:57:21 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,12 +40,17 @@ t_dlist	*get_var_ref(t_shctx *ctx, char const *var)
 
 t_dlist	*get_export_ref(t_shctx *ctx, char const *var)
 {
-	t_dlist			*env_i;
+	t_dlist	*exp_i;
+	char	*varname;
+	size_t	namelen;
 
-	env_i = ctx->exports;
-	while (env_i && ft_strcmp(env_i->content, var) != 0)
-		env_i = env_i->next;
-	return (env_i);
+	varname = get_var_id(var);
+	namelen = ft_strlen(varname);
+	exp_i = ctx->exports;
+	while (exp_i && ft_strncmp(exp_i->content, varname, namelen) != 0)
+		exp_i = exp_i->next;
+	free(varname);
+	return (exp_i);
 }
 
 char	*get_var_val(t_shctx *ctx, char const *varname)

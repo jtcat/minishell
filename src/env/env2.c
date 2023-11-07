@@ -6,7 +6,7 @@
 /*   By: jcat <joaoteix@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:01:35 by jcat              #+#    #+#             */
-/*   Updated: 2023/10/30 12:06:05 by jcat             ###   ########.fr       */
+/*   Updated: 2023/11/07 17:16:11 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,10 @@ void	set_var(t_shctx *ctx, const char *var, const char *val)
 		var_ref->content = newvar;
 	}
 	else
-		ft_dlstadd_back(&ctx->exports, ft_dlstnew(newvar));
+	{
+		ft_dlstadd_back(&ctx->envp, ft_dlstnew(newvar));
+		ctx->envp_len++;
+	}
 	free(varname);
 }
 

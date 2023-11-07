@@ -6,7 +6,7 @@
 /*   By: jcat <joaoteix@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:04:34 by jcat              #+#    #+#             */
-/*   Updated: 2023/10/30 12:06:00 by jcat             ###   ########.fr       */
+/*   Updated: 2023/11/07 17:02:54 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,7 +102,7 @@ int	export_ls_vars(t_shctx *ctx)
 			var = var->next;
 		}
 		varid = get_var_id(lrgst->content);
-		if (get_var_val(ctx, lrgst->content))
+		if (get_var_val(ctx, varid))
 			ft_dprintf(STDOUT_FILENO, EXP_FULL, varid, get_var_val(ctx, varid));
 		else
 			ft_dprintf(STDOUT_FILENO, EXP_ID, varid);

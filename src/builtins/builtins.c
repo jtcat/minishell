@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/25 14:22:48 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/11/07 15:27:01 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/11/07 17:10:46 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,15 +89,12 @@ int	pwd_cmd(t_shctx *ctx, char **args)
 int	env_cmd(t_shctx *ctx, char **args)
 {
 	t_dlist	*iter;
-	t_dlist	*var_ref;
 
-	iter = ctx->exports;
 	(void)args;
+	iter = ctx->envp;
 	while (iter)
 	{
-		var_ref = get_var_ref(ctx, iter->content);
-		if (var_ref)
-			ft_dprintf(STDOUT_FILENO, "%s\n", var_ref->content);
+		ft_dprintf(STDOUT_FILENO, "%s\n", iter->content);
 		iter = iter->next;
 	}
 	return (0);
