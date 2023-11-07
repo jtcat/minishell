@@ -6,7 +6,7 @@
 /*   By: joaoteix <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 17:30:59 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/11/06 17:29:30 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/11/07 16:01:21 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,6 +65,7 @@ int	exec_hd(t_shctx *ctx, t_cmd *cmd, char *delim)
 		g_exit_val = 0;
 		signal(SIGINT, handle_hd_int);
 		read_hd(delim, pipefd);
+		ctx->subshell = 1;
 		sctx_destroy(ctx);
 		exit(g_exit_val);
 	}
