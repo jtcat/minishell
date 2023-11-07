@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/26 23:37:11 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/30 12:59:37 by jcat             ###   ########.fr       */
+/*   Updated: 2023/11/07 17:50:59 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,9 @@ int				resolve_redirs(t_shctx *ctx,
 					t_cmd *cmd, int pipefd[2], int piperfd);
 void			handle_exec_err(t_shctx *ctx, char **args, char **envp);
 char			**conv_llenvp(size_t envp_len, t_dlist *envp);
+void			save_io(pid_t std_fds[2]);
+void			restore_io(pid_t std_fds[2]);
+int				stop_cmd(t_shctx *ctx, int pid);
 
 // Executer entry point
 void			exec_cmdlist(t_shctx *ctx, t_list *ppline_lst);

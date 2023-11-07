@@ -14,7 +14,7 @@ SRCS:= $(addprefix src/, \
 	$(addprefix lexer/, lexer.c) \
 	$(addprefix utils/, str_utils.c) \
 	$(addprefix parser/, grammar.c grammar2.c parser_utils.c hdoc.c) \
-	$(addprefix exec/, exec.c exec2.c expan.c redir.c) \
+	$(addprefix exec/, exec.c exec2.c exec3.c expan.c redir.c) \
 	$(addprefix env/, env.c env2.c) \
 	$(addprefix builtins/, builtins.c builtins2.c) \
 	$(addprefix dl_list/, ft_dlstadd_back.c ft_dlstclear.c ft_dlstdelone.c ft_dlstlast.c ft_dlstnew.c ft_dlstrmone.c ft_dlstdup.c) \

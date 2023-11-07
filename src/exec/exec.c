@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/13 02:13:40 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/11/07 15:08:49 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/11/07 17:51:04 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,28 +35,6 @@ int	exec_builtin(t_shctx *ctx, t_cmd *cmd)
 	cmd_ret = builtin_func(ctx, args + 1);
 	free(args);
 	return (cmd_ret);
-}
-
-int	stop_cmd(t_shctx *ctx, int pid)
-{
-	if (pid == -1)
-		return (pid);
-	sctx_destroy(ctx);
-	exit(g_exit_val);
-}
-
-void	save_io(pid_t std_fds[2])
-{
-	std_fds[1] = dup(STDOUT_FILENO);
-	std_fds[0] = dup(STDIN_FILENO);
-}
-
-void	restore_io(pid_t std_fds[2])
-{
-	dup2(std_fds[1], STDOUT_FILENO);
-	close(std_fds[1]);
-	dup2(std_fds[0], STDIN_FILENO);
-	close(std_fds[0]);
 }
 
 // Argument expansion is messy right now.
@@ -106,10 +84,9 @@ void	waitexec(pid_t last_pid)
 
 // Simple builtins (ones that don't fork) might
 // leave the fds in the main process changed up
-// after redirection
-//
-// Duplication and restoration of stdin and stdout
-// between command execution might be necessary (DONE)
+// after redirection. So duplication and
+// restoration of stdin and stdout between command
+// execution might be necessary (DONE)
 //
 // Current command execution status must be stored
 // temporarily as to not overwrite global exit status
