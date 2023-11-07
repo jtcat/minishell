@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:25 by leborges          #+#    #+#             */
-/*   Updated: 2023/11/06 16:58:43 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/11/07 14:52:57 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ typedef struct s_shctx
 {
 	bool			subshell;
 	char			*input;
+	int				std_fds[2];
 	t_dlist			*exports;
 	t_dlist			*envp;
 	size_t			exports_len;

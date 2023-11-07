@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/25 14:22:48 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/11/06 23:25:58 by jcat             ###   ########.fr       */
+/*   Updated: 2023/11/07 15:27:01 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,8 +127,6 @@ int	exit_cmd(t_shctx *ctx, char **args)
 		else
 			ctx->cmd_status = (int)exit_code;
 	}
-	if (!ctx->subshell)
-		ft_putstr_fd("exit\n", STDERR_FILENO);
 	sctx_destroy(ctx);
 	exit(ctx->cmd_status);
 	return (ctx->cmd_status);

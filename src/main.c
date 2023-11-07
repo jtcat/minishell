@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:30:28 by leborges          #+#    #+#             */
-/*   Updated: 2023/11/06 17:01:56 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/11/07 15:26:41 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,22 +31,16 @@ void	del_token(void *token)
 	free(token);
 }
 
-void	do_nothing(void *content)
-{
-	(void)content;
-	return ;
-}
-
 void	del_cmd(void *content)
 {
 	t_cmd	*cmd;
 
 	cmd = (t_cmd *)content;
-	ft_lstclear(&cmd->args, do_nothing);
+	ft_lstclear(&cmd->args, NULL);
 	if (cmd->hd_fd != -1)
 		close(cmd->hd_fd);
 	if (cmd->redirs)
-		ft_lstclear(&cmd->redirs, do_nothing);
+		ft_lstclear(&cmd->redirs, NULL);
 	if (cmd->cmdpath)
 		free(cmd->cmdpath);
 	free(cmd);
@@ -70,40 +64,38 @@ void	sctx_destroy(t_shctx *ctx)
 	ft_lstclear(&ctx->tokens, del_token);
 	ft_lstclear(&ctx->cmd_list, del_pipe);
 	rl_clear_history();
+	close(ctx->std_fds[0]);
+	close(ctx->std_fds[1]);
+	if (!ctx->subshell)
+		ft_putstr_fd("exit\n", STDERR_FILENO);
 }
 
 int	g_exit_val = 0;
 
-int	main(int argc, char *argv[], char const *envp[])
+int	main(int argc, char **argv, char const *envp[])
 {
 	t_shctx	ctx;
 
+	(void)argc;
 	(void)argv;
-	ctx.input = NULL;
-	ctx.cmd_list = NULL;
-	ctx.tokens = NULL;
-	ctx.cmd_status = 0;
-	ctx.subshell = false;
+	ft_memset(&ctx, 0, sizeof(t_shctx));
 	bind_interact_sigs();
 	init_envp(&ctx, envp);
-	if (argc == 1)
+	ctx.input = readline(MSH_CMD_PROMPT);
+	while (ctx.input)
 	{
-		ctx.input = readline(MSH_CMD_PROMPT);
-		while (ctx.input)
+		if (!is_blank_str(ctx.input))
 		{
-			if (!is_blank_str(ctx.input))
-			{
-				ctx.tokens = split_tokens(ctx.input);
-				if (parse_input(&ctx, ctx.tokens, &ctx.cmd_list))
-					exec_cmdlist(&ctx, ctx.cmd_list);
-				ft_lstclear(&ctx.tokens, del_token);
-				ft_lstclear(&ctx.cmd_list, del_pipe);
-				add_history(ctx.input);
-			}
-			free(ctx.input);
-			ctx.input = readline(MSH_CMD_PROMPT);
+			ctx.tokens = split_tokens(ctx.input);
+			if (parse_input(&ctx, ctx.tokens, &ctx.cmd_list))
+				exec_cmdlist(&ctx, ctx.cmd_list);
+			ft_lstclear(&ctx.tokens, del_token);
+			ft_lstclear(&ctx.cmd_list, del_pipe);
+			add_history(ctx.input);
 		}
-		sctx_destroy(&ctx);
+		free(ctx.input);
+		ctx.input = readline(MSH_CMD_PROMPT);
 	}
-	return (g_exit_val);
+	sctx_destroy(&ctx);
+	exit(g_exit_val);
 }

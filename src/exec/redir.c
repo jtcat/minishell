@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/27 00:08:00 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/11/06 17:03:17 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/11/07 14:25:04 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,19 +55,19 @@ int	file_redir(t_shctx *ctx, char **fname_ref, int red_type)
 	return (redir_to);
 }
 
-void	pipe_redir(int iofd[2], int piperfd)
+void	pipe_redir(int pipefd[2], int prevread)
 {
-	if (piperfd > 0)
-		close(piperfd);
-	if (iofd[1] > 0)
+	if (pipefd[0] > 0)
+		close(pipefd[0]);
+	if (prevread > 0)
 	{
-		dup2(iofd[1], STDIN_FILENO);
-		close(iofd[1]);
+		dup2(prevread, STDIN_FILENO);
+		close(prevread);
 	}
-	if (iofd[0] > 0)
+	if (pipefd[1] > 0)
 	{
-		dup2(iofd[0], STDOUT_FILENO);
-		close(iofd[0]);
+		dup2(pipefd[1], STDOUT_FILENO);
+		close(pipefd[1]);
 	}
 }
 
@@ -95,13 +95,13 @@ void	redir_hd(t_shctx *ctx, t_cmd *cmd)
 	close(pipe_fd[0]);
 }
 
-int	resolve_redirs(t_shctx *ctx, t_cmd *cmd, int pipefd[2], int piperfd)
+int	resolve_redirs(t_shctx *ctx, t_cmd *cmd, int pipefd[2], int prevread)
 {
 	t_list	*redir;
 	t_token	*redir_tok;
 	int		redir_stat;
 
-	pipe_redir(pipefd, piperfd);
+	pipe_redir(pipefd, prevread);
 	redir = cmd->redirs;
 	while (redir)
 	{

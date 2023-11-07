@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/13 02:13:40 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/11/06 19:02:38 by ledos-sa         ###   ########.fr       */
+/*   Updated: 2023/11/07 15:08:49 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,17 +61,8 @@ void	restore_io(pid_t std_fds[2])
 
 // Argument expansion is messy right now.
 //
-// exitval is only used as external var by builtins running in the main process
-//
-// I don't think execve should fail.
-// If it does, I don't know what the expected bash-like behaviour is
-//
 // First arg expansion will fail if it's NULL (like in '< file.txt' for example)
-//
-// Pipes should not be closed immediately after launching commands
-// The shell should wait until a command has finished before closing it's
-// input and output pipe fds.
-int	exec_cmd(t_cmd *cmd, t_shctx *ctx, int iofd[2], int piperfd)
+int	exec_cmd(t_cmd *cmd, t_shctx *ctx, int pipefd[2], int prevread)
 {
 	char	**args;
 	char	**envp;
@@ -80,12 +71,12 @@ int	exec_cmd(t_cmd *cmd, t_shctx *ctx, int iofd[2], int piperfd)
 	pid = -1;
 	if (cmd->args)
 		cmd->cmdpath = ft_strdup(expand_word(ctx, (char **)cmd->args->content));
-	if (iofd[0] > -1 || iofd[1] > -1 || !get_builtinfunc(cmd))
+	if (prevread > -1 || pipefd[1] > -1 || !get_builtinfunc(cmd))
 		pid = fork();
 	if (pid > 0)
 		return (pid);
 	ctx->subshell = pid == 0;
-	if (!resolve_redirs(ctx, cmd, iofd, piperfd) || !cmd->args)
+	if (!resolve_redirs(ctx, cmd, pipefd, prevread) || !cmd->args)
 		return (stop_cmd(ctx, pid));
 	if (get_builtinfunc(cmd))
 	{
@@ -128,7 +119,6 @@ void	exec_pipeline(t_shctx *ctx, t_list *cmd_lst)
 	int		pipe_fd[2];
 	int		tmp_fd;
 	pid_t	last_pid;
-	pid_t	std_fds[2];
 
 	tmp_fd = -1;
 	while (cmd_lst)
@@ -137,10 +127,9 @@ void	exec_pipeline(t_shctx *ctx, t_list *cmd_lst)
 		pipe_fd[1] = -1;
 		if (cmd_lst->next)
 			pipe(pipe_fd);
-		save_io(std_fds);
-		last_pid = exec_cmd((t_cmd *)(cmd_lst->content), ctx,
-				(int [2]){pipe_fd[1], tmp_fd}, pipe_fd[0]);
-		restore_io(std_fds);
+		save_io(ctx->std_fds);
+		last_pid = exec_cmd((t_cmd *)(cmd_lst->content), ctx, pipe_fd, tmp_fd);
+		restore_io(ctx->std_fds);
 		if (tmp_fd > -1)
 			close(tmp_fd);
 		cmd_lst = cmd_lst->next;
