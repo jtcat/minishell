@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/26 15:16:27 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/11/06 19:00:28 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/11/07 16:42:35 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,7 @@ bool	parse_list_suffix(t_shctx *ctx, t_list **cursor, \
 	consume_cursor(cursor);
 	if (!parse_pipeline(ctx, cursor, pipe_list, err_flag))
 		return (synt_err("list_suffix_err", cursor, err_flag));
-	((t_ppline *)(*pipe_list)->content)->op = op;
+	((t_ppline *)(ft_lstlast(*pipe_list))->content)->op = op;
 	return (true);
 }
 
