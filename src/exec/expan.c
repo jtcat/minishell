@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/27 00:11:03 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/11/06 18:53:55 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/11/07 18:12:15 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,7 +69,7 @@ char	*expand_word(t_shctx *ctx, char **word_ref)
 	cursor = *word_ref;
 	word_start = *word_ref;
 	expan = ft_strdup("");
-	while (is_wordchar(*cursor))
+	while (*cursor)
 	{
 		if (*cursor == '\'')
 		{
