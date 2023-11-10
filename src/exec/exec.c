@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/13 02:13:40 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/11/10 15:02:00 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/11/10 21:40:20 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ int	exec_cmd(t_cmd *cmd, t_shctx *ctx, int pipefd[2], int prevread)
 
 	pid = -1;
 	if (cmd->args)
-		cmd->cmdpath = ft_strdup(expand_word(ctx, (char **)cmd->args->content));
+		cmd->cmdpath = ft_strdup(expand_word(ctx, (char **)cmd->args->content, 0));
 	if (prevread > -1 || pipefd[1] > -1 || !get_builtinfunc(cmd))
 		pid = fork();
 	if (pid > 0)
