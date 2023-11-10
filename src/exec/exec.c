@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/13 02:13:40 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/11/10 21:40:20 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/11/10 21:53:54 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,31 +40,31 @@ int	exec_builtin(t_shctx *ctx, t_cmd *cmd)
 // Argument expansion is messy right now.
 //
 // First arg expansion will fail if it's NULL (like in '< file.txt' for example)
-int	exec_cmd(t_cmd *cmd, t_shctx *ctx, int pipefd[2], int prevread)
+int	exec_cmd(t_cmd *c, t_shctx *ctx, int pipefd[2], int prevread)
 {
 	char	**args;
 	char	**envp;
 	int		pid;
 
 	pid = -1;
-	if (cmd->args)
-		cmd->cmdpath = ft_strdup(expand_word(ctx, (char **)cmd->args->content, 0));
-	if (prevread > -1 || pipefd[1] > -1 || !get_builtinfunc(cmd))
+	if (c->args)
+		c->cmdpath = ft_strdup(expand_word(ctx, (char **)c->args->content, 0));
+	if (prevread > -1 || pipefd[1] > -1 || !get_builtinfunc(c))
 		pid = fork();
 	if (pid > 0)
 		return (pid);
 	ctx->subshell = pid == 0;
-	if (!resolve_redirs(ctx, cmd, pipefd, prevread) || !cmd->args)
+	if (!resolve_redirs(ctx, c, pipefd, prevread) || !c->args)
 		return (stop_cmd(ctx, pid));
-	if (get_builtinfunc(cmd))
+	if (get_builtinfunc(c))
 	{
-		g_exit_val = exec_builtin(ctx, cmd);
+		g_exit_val = exec_builtin(ctx, c);
 		return (stop_cmd(ctx, pid));
 	}
-	resolve_cmd(ctx, &cmd->cmdpath);
-	args = expand_args(ctx, cmd);
+	resolve_cmd(ctx, &c->cmdpath);
+	args = expand_args(ctx, c);
 	envp = conv_llenvp(ctx->envp_len, ctx->envp);
-	execve(cmd->cmdpath, args, envp);
+	execve(c->cmdpath, args, envp);
 	handle_exec_err(ctx, args, envp);
 	return (pid);
 }
