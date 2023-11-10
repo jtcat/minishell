@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 23:33:09 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/10/30 13:38:35 by jcat             ###   ########.fr       */
+/*   Updated: 2023/11/10 14:51:15 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,9 +35,9 @@ int	is_blank_str(char str[])
 	return (1);
 }
 
-int	is_num(char *str)
+char	*replace_str(char **dest_ref, char *newstr)
 {
-	while (ft_isdigit(*str))
-		str++;
-	return (*str == '\0');
+	free(*dest_ref);
+	*dest_ref = newstr;
+	return (newstr);
 }

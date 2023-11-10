@@ -6,18 +6,15 @@
 /*   By: joaoteix <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/02 18:46:50 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/09/25 12:16:23 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/11/10 14:58:24 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+#include "libft.h"
 
 static int	ft_isspace(char c)
 {
 	return (c == ' ' || (c >= '\t' && c <= '\r'));
-}
-
-static int	ft_isnum(char c)
-{
-	return (c >= '0' && c <= '9');
 }
 
 static int	ft_is_sign(char c)
@@ -25,7 +22,7 @@ static int	ft_is_sign(char c)
 	return (c == '+' || c == '-');
 }
 
-int	ft_atoi(char *str, int *isval)
+int	ft_atoi(const char *str, int *isval)
 {
 	int	numb;
 	int	sign;
@@ -39,7 +36,7 @@ int	ft_atoi(char *str, int *isval)
 		sign *= (*str == '-') * -2 + 1;
 		str++;
 	}
-	while (ft_isnum(*str))
+	while (ft_isdigit(*str))
 	{
 		numb *= 10;
 		numb += (int)(*str - '0');

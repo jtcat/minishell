@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/27 00:11:03 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/11/07 18:12:15 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/11/10 15:07:08 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 
 extern int	g_exit_val;
 
-void	str_cat(char **dst_ref, char *src)
+char	*str_cat(char **dst_ref, char *src)
 {
 	char	*tmp;
 
@@ -25,37 +25,60 @@ void	str_cat(char **dst_ref, char *src)
 	free(src);
 	free(*dst_ref);
 	*dst_ref = tmp;
+	return (*dst_ref);
 }
 
 // 'echo $' should result in '$\n'
 // 'echo $+' should result in '$+\n'
-char	*expand_var(t_shctx *ctx, char *cursor, char **expansion)
+char	*expand_var(t_shctx *ctx, char *cursor, char **expan, char **word_start)
 {
-	char const	*start = cursor;
+	char const	*start = ++cursor;
 	char		*tmp;
 	char		*var_val;
 
+	str_cat(expan, ft_substr(*word_start, 0, cursor - *word_start - 1));
 	if (*cursor == '?')
 	{
-		var_val = ft_itoa(g_exit_val);
-		cursor++;
+		str_cat(expan, ft_itoa(g_exit_val));
+		*word_start = ++cursor;
+		return (cursor);
 	}
+	while (ft_isalnum(*cursor) || *cursor == '_')
+		cursor++;
+	*word_start = cursor - 1;
+	if (cursor == start)
+		return (cursor);
+	*word_start = cursor;
+	var_val = get_var_val(ctx, start);
+	if (!var_val)
+		return (cursor);
+	tmp = ft_strjoin(*expan, var_val);
+	free(*expan);
+	*expan = tmp;
+	return (cursor);
+}
+
+char	*expand_dquote(t_shctx *ctx, char **word_start,
+		char *cursor, char **expan)
+{
+	str_cat(expan, ft_substr(*word_start, 0, cursor - *word_start));
+	cursor++;
+	*word_start = cursor;
+	if (*(cursor - 1) == '\'')
+		cursor = ft_strchr(cursor, '\'');
 	else
 	{
-		while (ft_isalnum(*cursor) || *cursor == '_')
-			(cursor)++;
-		if (cursor == start)
-			return (cursor - 1);
-		var_val = get_var_val(ctx, start);
-		if (!var_val)
-			return (cursor - 1);
+		while (*cursor != '"')
+		{
+			if (*cursor == '$')
+				cursor = expand_var(ctx, cursor, expan, word_start);
+			else
+				cursor++;
+		}
 	}
-	tmp = ft_strjoin(*expansion, var_val);
-	if (*(cursor - 1) == '?')
-		free(var_val);
-	free(*expansion);
-	*expansion = tmp;
-	return (cursor - 1);
+	str_cat(expan, ft_substr(*word_start, 0, cursor - *word_start));
+	*word_start = cursor + 1;
+	return (cursor + 1);
 }
 
 // Word unquoting and parameter expasion.
@@ -71,37 +94,12 @@ char	*expand_word(t_shctx *ctx, char **word_ref)
 	expan = ft_strdup("");
 	while (*cursor)
 	{
-		if (*cursor == '\'')
-		{
-			str_cat(&expan, ft_substr(word_start, 0, cursor - word_start));
-			word_start = cursor + 1;
-			cursor = ft_strchr(cursor + 1, '\'');
-			str_cat(&expan, ft_substr(word_start, 0, cursor - word_start));
-			word_start = cursor + 1;
-		}
-		else if (*cursor == '"')
-		{
-			str_cat(&expan, ft_substr(word_start, 0, cursor - word_start));
-			word_start = cursor + 1;
-			while (*(++cursor) != '"')
-			{
-				if (*cursor == '$')
-				{
-					str_cat(&expan, ft_substr(word_start, 0, cursor - word_start));
-					cursor = expand_var(ctx, cursor + 1, &expan);
-					word_start = cursor + 1;
-				}
-			}
-			str_cat(&expan, ft_substr(word_start, 0, cursor - word_start));
-			word_start = cursor + 1;
-		}
+		if (*cursor == '\'' || *cursor == '"')
+			cursor = expand_dquote(ctx, &word_start, cursor, &expan);
 		else if (*cursor == '$')
-		{
-			str_cat(&expan, ft_substr(word_start, 0, cursor - word_start));
-			cursor = expand_var(ctx, cursor + 1, &expan);
-			word_start = cursor + 1;
-		}
-		cursor++;
+			cursor = expand_var(ctx, cursor, &expan, &word_start);
+		else
+			cursor++;
 	}
 	str_cat(&expan, ft_substr(word_start, 0, cursor - word_start));
 	free(*word_ref);
@@ -123,7 +121,8 @@ char	**expand_args(t_shctx *ctx, t_cmd *cmd)
 	i = 1;
 	while (arg_iter)
 	{
-		args[i++] = expand_word(ctx, arg_iter->content);
+		expand_word(ctx, arg_iter->content);
+		args[i++] = *(char **)arg_iter->content;
 		arg_iter = arg_iter->next;
 	}
 	return (args);
