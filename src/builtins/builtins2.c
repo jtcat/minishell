@@ -6,7 +6,7 @@
 /*   By: jcat <joaoteix@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:04:34 by jcat              #+#    #+#             */
-/*   Updated: 2023/11/07 17:02:54 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/11/10 17:52:50 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,25 +59,21 @@ int	export_vars(t_shctx *ctx, char **vars)
 
 int	unset_cmd(t_shctx *ctx, char **var_ids)
 {
-	t_dlist	*var_ref;
+	int		exitval;
 
+	exitval = 0;
 	while (*var_ids)
 	{
-		var_ref = get_var_ref(ctx, *var_ids);
-		if (var_ref)
+		if (!ft_strchr(*var_ids, '=') && val_var_id(*var_ids))
+			unset_var(ctx, *var_ids);
+		else
 		{
-			ft_dlstrmone(&ctx->envp, var_ref, free);
-			ctx->envp_len--;
-		}
-		var_ref = get_export_ref(ctx, *var_ids);
-		if (var_ref)
-		{
-			ft_dlstrmone(&ctx->exports, var_ref, free);
-			ctx->exports_len--;
+			ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX ERR_EXP_INV, *var_ids);
+			exitval = 1;
 		}
 		var_ids++;
 	}
-	return (0);
+	return (exitval);
 }
 
 #define EXP_FULL "declare -x %s=\"%s\"\n"
