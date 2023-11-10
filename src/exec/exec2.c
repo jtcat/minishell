@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/26 23:14:59 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/11/06 19:02:22 by ledos-sa         ###   ########.fr       */
+/*   Updated: 2023/11/10 15:42:14 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,7 +63,7 @@ void	handle_exec_err(t_shctx *ctx, char **args, char **envp)
 	free(envp);
 	free(args);
 	sctx_destroy(ctx);
-	exit(1);
+	exit(g_exit_val);
 }
 
 // Redo this, it's messy and exit statuses are missing
