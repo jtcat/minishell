@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/25 14:22:48 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/11/10 16:39:01 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/11/10 20:33:58 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include <linux/limits.h>
 #include <minishell.h>
 #include <shell_utils.h>
+#include "builtins.h"
 #include <env.h>
 #include <errno.h>
 #include <string.h>
@@ -28,9 +29,15 @@ extern int	g_exit_val;
 
 int	echo_cmd(t_shctx *ctx, char **args)
 {
-	const int	n_opt = *args && ft_strcmp(args[0], "-n") == 0;
+	int	i;
+	int	n_opt;
 
 	(void)ctx;
+	i = 1;
+	if (args[0][0] == '-')
+		while (args[0][i] == 'n')
+			i++;
+	n_opt = *args && ft_strncmp(args[0], "-n", 2) == 0 && !args[0][i];
 	if (n_opt)
 		args++;
 	while (*args)
@@ -48,17 +55,11 @@ int	echo_cmd(t_shctx *ctx, char **args)
 int	cd_cmd(t_shctx *ctx, char **args)
 {
 	char		*curpath;
-	char const	*home = get_var_val(ctx, "HOME");
 	char		cwd[PATH_MAX];
 
-	if (*(args + 1) != NULL)
-	{
-		ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX "cd: too many arguments\n");
-		return (1);
-	}
 	curpath = *args;
-	if (!*args && *home)
-		curpath = (char *)home;
+	if (cd_val_args(ctx, args, &curpath) == 1)
+		return (1);
 	getcwd(cwd, PATH_MAX);
 	if (chdir(curpath) != 0)
 	{

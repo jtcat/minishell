@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/27 00:08:00 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/11/10 16:12:03 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/11/10 20:31:34 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,7 +85,6 @@ void	redir_hd(t_shctx *ctx, t_cmd *cmd)
 	{
 		expand_word(ctx, &line);
 		ft_putstr_fd(line, pipe_fd[1]);
-		//ft_putchar_fd('\n', pipe_fd[1]);
 		free(line);
 		line = get_next_line(cmd->hd_fd);
 	}
