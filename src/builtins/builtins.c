@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/25 14:22:48 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/11/07 17:10:46 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/11/10 16:39:01 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@
 #include <unistd.h>
 #include <stdio.h>
 
-#define ERRC_CD_ARGS 127
+extern int	g_exit_val;
 
 // Builtin utilities
 // Return values represent exit status
@@ -100,7 +100,7 @@ int	env_cmd(t_shctx *ctx, char **args)
 	return (0);
 }
 
-#define ERR_EXIT_NAN "exit: non numeric argument: %s\n"
+#define ERR_EXIT_NAN "exit: %s: numeric argument required\n"
 #define ERR_EXIT_ARGC "exit: too many arguments\n"
 
 int	exit_cmd(t_shctx *ctx, char **args)
@@ -114,17 +114,19 @@ int	exit_cmd(t_shctx *ctx, char **args)
 		if (!is_num)
 		{
 			ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX ERR_EXIT_NAN, *args);
-			ctx->cmd_status = 2;
+			g_exit_val = 2;
 		}
 		else if (*(args + 1) != NULL)
 		{
 			ft_putstr_fd(MSH_ERR_PFIX ERR_EXIT_ARGC, STDERR_FILENO);
-			ctx->cmd_status = 1;
+			g_exit_val = 1;
+			ft_putstr_fd("exit\n", STDERR_FILENO);
+			return (g_exit_val);
 		}
 		else
-			ctx->cmd_status = (int)exit_code;
+			g_exit_val = (int)exit_code;
 	}
 	sctx_destroy(ctx);
-	exit(ctx->cmd_status);
-	return (ctx->cmd_status);
+	exit(g_exit_val);
+	return (g_exit_val);
 }
