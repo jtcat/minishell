@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/25 14:22:48 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/11/10 20:33:58 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/11/10 20:40:40 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ int	echo_cmd(t_shctx *ctx, char **args)
 
 	(void)ctx;
 	i = 1;
-	if (args[0][0] == '-')
+	if (*args && args[0][0] == '-')
 		while (args[0][i] == 'n')
 			i++;
 	n_opt = *args && ft_strncmp(args[0], "-n", 2) == 0 && !args[0][i];

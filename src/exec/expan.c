@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/27 00:11:03 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/11/10 20:14:45 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/11/10 20:52:35 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,7 +88,7 @@ char	*expand_dquote(t_shctx *ctx, char **word_start,
 
 // Word unquoting and parameter expasion.
 // This is garbage and barely works
-char	*expand_word(t_shctx *ctx, char **word_ref)
+char	*expand_word(t_shctx *ctx, char **word_ref, int varonly)
 {
 	char	*cursor;
 	char	*word_start;
@@ -99,7 +99,7 @@ char	*expand_word(t_shctx *ctx, char **word_ref)
 	expan = ft_strdup("");
 	while (*cursor)
 	{
-		if (*cursor == '\'' || *cursor == '"')
+		if (!varonly && (*cursor == '\'' || *cursor == '"'))
 			cursor = expand_dquote(ctx, &word_start, cursor, &expan);
 		else if (*cursor == '$')
 			cursor = expand_var(ctx, cursor, &expan, &word_start);
@@ -126,7 +126,7 @@ char	**expand_args(t_shctx *ctx, t_cmd *cmd)
 	i = 1;
 	while (arg_iter)
 	{
-		expand_word(ctx, arg_iter->content);
+		expand_word(ctx, arg_iter->content, 0);
 		args[i++] = *(char **)arg_iter->content;
 		arg_iter = arg_iter->next;
 	}

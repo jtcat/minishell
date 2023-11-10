@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/27 00:08:00 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/11/10 20:31:34 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/11/10 20:51:08 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ void	handle_redir_err(char *fname)
 int	file_redir(t_shctx *ctx, char **fname_ref, int red_type)
 {
 	int			redir_to;
-	char *const	exp_filename = expand_word(ctx, fname_ref);
+	char *const	exp_filename = expand_word(ctx, fname_ref, 0);
 
 	if (!ft_strcmp(exp_filename, ""))
 	{
@@ -83,7 +83,7 @@ void	redir_hd(t_shctx *ctx, t_cmd *cmd)
 	line = get_next_line(cmd->hd_fd);
 	while (line)
 	{
-		expand_word(ctx, &line);
+		expand_word(ctx, &line, 1);
 		ft_putstr_fd(line, pipe_fd[1]);
 		free(line);
 		line = get_next_line(cmd->hd_fd);

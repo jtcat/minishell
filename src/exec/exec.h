@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/26 23:37:11 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/11/10 14:51:06 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/11/10 20:49:41 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ typedef int	(*t_builtin_func)(t_shctx *, char **);
 
 t_builtin_func	get_builtinfunc(t_cmd *cmd);
 char			**expand_args(t_shctx *ctx, t_cmd *cmd);
-char			*expand_word(t_shctx *ctx, char **word_ref);
+char			*expand_word(t_shctx *ctx, char **word_ref, int varonly);
 void			resolve_cmd(t_shctx *ctx, char **cmd_path_ref);
 int				resolve_redirs(t_shctx *ctx,
 					t_cmd *cmd, int pipefd[2], int piperfd);
