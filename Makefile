@@ -1,11 +1,12 @@
 CC:= cc
 
-CFLAGS:= -O0 -g -Wall -Wextra -Werror
+CFLAGS:= -Wall -Wextra -Werror
 #CFLAGS:= -fsanitize=address -O0 -g -Wall -Wextra -Werror
 
 LIB_FLAGS:= -lreadline
 
 NAME:= minishell
+NAME_BONUS:= minishell_bonus
 
 LFT_DIR:= src/libft
 LFT:= $(LFT_DIR)/libft.a
@@ -35,8 +36,10 @@ OBJS_BONUS:= $(SRC_BONUS:.c=.o)
 
 all: $(NAME)
 
-bonus: $(HDR) $(LFT) $(OBJS_BONUS)
-	$(CC) $(CFLAGS) $(LIB_FLAGS) $(OBJS_BONUS) $(LFT) -o $(NAME)
+bonus: $(NAME_BONUS)
+	
+$(NAME_BONUS): $(HDR) $(LFT) $(OBJS_BONUS)
+	$(CC) $(CFLAGS) $(LIB_FLAGS) $(OBJS_BONUS) $(LFT) -o $(NAME_BONUS)
 
 $(NAME): $(HDR) $(LFT) $(OBJS)
 	$(CC) $(CFLAGS) $(LIB_FLAGS) $(OBJS) $(LFT) -o $(NAME)
@@ -57,5 +60,6 @@ clean:
 fclean: clean
 	$(MAKE) fclean -C $(LFT_DIR)
 	rm -f $(NAME)
+	rm -f $(NAME_BONUS)
 
 re: fclean all
