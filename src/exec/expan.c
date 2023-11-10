@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/27 00:11:03 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/11/10 15:07:08 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/11/10 18:02:25 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,10 +64,15 @@ char	*expand_dquote(t_shctx *ctx, char **word_start,
 	str_cat(expan, ft_substr(*word_start, 0, cursor - *word_start));
 	cursor++;
 	*word_start = cursor;
-	if (*(cursor - 1) == '\'')
-		cursor = ft_strchr(cursor, '\'');
-	else
+	cursor = ft_strchr(cursor, *(cursor - 1));
+	if (!cursor)
 	{
+		(*word_start)--;
+		return ((*word_start) + 1);
+	}
+	if (*(*word_start - 1) == '"')
+	{
+		cursor = *word_start;
 		while (*cursor != '"')
 		{
 			if (*cursor == '$')

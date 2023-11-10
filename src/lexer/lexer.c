@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:29:48 by leborges          #+#    #+#             */
-/*   Updated: 2023/11/07 15:58:09 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/11/10 18:08:55 by joaoteix         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,12 +41,6 @@ bool	lex_word(t_list **token_list, char **cursor)
 			quote_end = ft_strchr(*cursor + 1, **cursor);
 			if (quote_end)
 				*cursor = quote_end;
-			else
-			{
-				ft_dprintf(STDERR_FILENO, MSH_ERR_PFIX
-					"unclosed quote at: `%c'\n", **cursor);
-				return (false);
-			}
 		}
 		(*cursor)++;
 	}
@@ -67,12 +61,10 @@ bool	lex_op(t_list **token_list, char **cursor)
 		+ (**cursor == '<') * red_in
 		+ (**cursor == '|') * pipe_op;
 	(*cursor)++;
-	if (**cursor == *token_start)
+	if (**cursor == *token_start && **cursor != '|')
 	{
-		type = (**cursor == '>') * red_out_ap
-			+ (**cursor == '<') * here_doc
-			+ (**cursor == '&') * lst_and
-			+ (**cursor == '|') * lst_or;
+		type = (**cursor == '>') * red_out_ap \
+			+ (**cursor == '<') * here_doc;
 		(*cursor)++;
 	}
 	store_token(token_list, token_start, *cursor - 1, type);
