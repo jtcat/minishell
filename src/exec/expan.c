@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/27 00:11:03 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/11/10 20:52:35 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/11/10 22:24:02 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ char	*expand_var(t_shctx *ctx, char *cursor, char **expan, char **word_start)
 	return (cursor);
 }
 
-char	*expand_dquote(t_shctx *ctx, char **word_start, 
+char	*expand_dquote(t_shctx *ctx, char **word_start,
 		char *cursor, char **expan)
 {
 	str_cat(expan, ft_substr(*word_start, 0, cursor - *word_start));

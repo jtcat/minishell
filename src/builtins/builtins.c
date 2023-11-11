@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/25 14:22:48 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/11/10 20:40:40 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/11/10 23:36:00 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,25 +29,25 @@ extern int	g_exit_val;
 
 int	echo_cmd(t_shctx *ctx, char **args)
 {
-	int	i;
-	int	n_opt;
+	char	**iter;
+	int		i;
 
 	(void)ctx;
+	iter = args;
 	i = 1;
 	if (*args && args[0][0] == '-')
 		while (args[0][i] == 'n')
 			i++;
-	n_opt = *args && ft_strncmp(args[0], "-n", 2) == 0 && !args[0][i];
-	if (n_opt)
-		args++;
-	while (*args)
+	if (*args && (ft_strncmp(*args, "-n", 2) == 0) && !args[0][i])
+		iter++;
+	while (*iter)
 	{
-		ft_putstr_fd(*args, STDOUT_FILENO);
-		args++;
-		if (*args)
+		ft_putstr_fd(*iter, STDOUT_FILENO);
+		iter++;
+		if (*iter)
 			ft_putchar_fd(' ', STDOUT_FILENO);
 	}
-	if (!n_opt)
+	if (!(*args && ft_strncmp(*args, "-n", 2) == 0 && !args[0][i]))
 		ft_putchar_fd('\n', STDOUT_FILENO);
 	return (0);
 }
