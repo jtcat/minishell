@@ -1,10 +1,12 @@
 .vscode/
 *.o
+*.swp
 a.out
 *.a
 compile_commands.json
 .cache
 minishell
+minishell_bonus
 src/libft/bonus
 *.pdf
 include/libft.h
