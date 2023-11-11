@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/26 15:16:27 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/11/07 16:42:35 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/11/11 00:05:15 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,11 +31,11 @@ bool	parse_pipeline(t_shctx *ctx, t_list **cursor,
 
 	pipeline = ft_calloc(1, sizeof(t_ppline));
 	pipeline->op = lst_no_op;
+	ft_lstadd_back(pipe_list, ft_lstnew(pipeline));
 	if (!parse_simple_cmd(ctx, cursor, &pipeline->cmds, err_flag))
 		return (false);
 	while (parse_pipeline_suffix(ctx, cursor, &pipeline, err_flag))
 		;
-	ft_lstadd_back(pipe_list, ft_lstnew(pipeline));
 	return (true);
 }
 
