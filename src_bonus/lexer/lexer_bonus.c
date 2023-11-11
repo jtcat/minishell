@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:29:48 by leborges          #+#    #+#             */
-/*   Updated: 2023/11/11 01:34:32 by jcat             ###   ########.fr       */
+/*   Updated: 2023/11/11 01:40:06 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,9 +79,9 @@ t_list	*split_tokens(char *str)
 		if (is_op(*str))
 			lex_op(&token_list, &str);
 		else if (is_wordchar(*str))
- 			lex_word(&token_list, &str);
+			lex_word(&token_list, &str);
 		else
-		 	str++;
+			str++;
 	}
 	store_token(&token_list, NULL, NULL, newline);
 	return (token_list);
