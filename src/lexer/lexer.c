@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:29:48 by leborges          #+#    #+#             */
-/*   Updated: 2023/11/10 18:08:55 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/11/11 00:33:37 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,8 +31,6 @@ bool	lex_word(t_list **token_list, char **cursor)
 	char	*word_start;
 	char	*quote_end;
 
-	if (!is_wordchar(**cursor))
-		return (false);
 	word_start = *cursor;
 	while (is_wordchar(**cursor))
 	{
@@ -53,8 +51,6 @@ bool	lex_op(t_list **token_list, char **cursor)
 	char			*token_start;
 	t_token_type	type;
 
-	if (!is_op(**cursor))
-		return (false);
 	type = word;
 	token_start = (*cursor);
 	type = (**cursor == '>') * red_out
@@ -82,8 +78,15 @@ t_list	*split_tokens(char *str)
 	t_list			*token_list;
 
 	token_list = NULL;
-	while (lex_op(&token_list, &str) || lex_word(&token_list, &str))
-		skip(&str);
+	while (*str)
+	{
+		if (is_op(*str))
+			lex_op(&token_list, &str);
+		else if (is_wordchar(*str))
+			lex_word(&token_list, &str);
+		else
+			str++;
+	}
 	store_token(&token_list, NULL, NULL, newline);
 	return (token_list);
 }
