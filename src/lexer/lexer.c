@@ -6,7 +6,7 @@
 /*   By: leborges <leborges@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/24 17:29:48 by leborges          #+#    #+#             */
-/*   Updated: 2023/11/11 00:33:37 by jcat             ###   ########.fr       */
+/*   Updated: 2023/11/11 01:16:10 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,19 +29,10 @@ void	store_token(t_list **token_list, char *start, char *end,
 bool	lex_word(t_list **token_list, char **cursor)
 {
 	char	*word_start;
-	char	*quote_end;
 
 	word_start = *cursor;
 	while (is_wordchar(**cursor))
-	{
-		if (**cursor == '\'' || **cursor == '"')
-		{
-			quote_end = ft_strchr(*cursor + 1, **cursor);
-			if (quote_end)
-				*cursor = quote_end;
-		}
 		(*cursor)++;
-	}
 	store_token(token_list, word_start, *cursor - 1, word);
 	return (true);
 }
@@ -65,12 +56,6 @@ bool	lex_op(t_list **token_list, char **cursor)
 	}
 	store_token(token_list, token_start, *cursor - 1, type);
 	return (true);
-}
-
-void	skip(char	**cursor)
-{
-	while (**cursor && !is_wordchar(**cursor) && !is_op(**cursor))
-		(*cursor)++;
 }
 
 t_list	*split_tokens(char *str)
