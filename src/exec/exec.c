@@ -6,7 +6,7 @@
 /*   By: joaoteix <joaoteix@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/13 02:13:40 by joaoteix          #+#    #+#             */
-/*   Updated: 2023/11/10 21:53:54 by joaoteix         ###   ########.fr       */
+/*   Updated: 2023/12/05 15:12:09 by jcat             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,7 @@ int	exec_cmd(t_cmd *c, t_shctx *ctx, int pipefd[2], int prevread)
 	args = expand_args(ctx, c);
 	envp = conv_llenvp(ctx->envp_len, ctx->envp);
 	execve(c->cmdpath, args, envp);
-	handle_exec_err(ctx, args, envp);
+	handle_exec_err(ctx, args, envp, c->cmdpath);
 	return (pid);
 }
 
