@@ -15,4 +15,4 @@ Requires `make` and the GNU Readline library
 Simply run:
 `make`
 ## Usage
-`./minishell´
+`./minishell`
