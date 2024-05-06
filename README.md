@@ -14,3 +14,5 @@ Requires `make` and the GNU Readline library
 ## Build
 Simply run:
 `make`
+## Usage
+`./minishell´
